@@ -521,11 +521,7 @@ function render() {
   $('dot').hidden = pend === 0;
   const kp = (l, v, tag, bg, fg, col, w, pc) => `<div class="k"><div class="h"><span>${l}</span><span class="pill" style="background:${bg};color:${fg}">${tag}</span></div><div class="v">${v}</div><div><div class="bar"><i style="width:${w}%;background:${col}"></i></div><small>${pc}</small></div></div>`;
   const pc = v => Math.round(v / tot * 100);
-  $('kpis').innerHTML =
-    kp('Total donaciones', all.length, 'Todas', '#1B2A44', '#9CC0FF', '#4C8DFF', 100, 'Todas las donaciones') +
-    kp('Pendientes por aprobar', pend, 'Pendiente', '#3A2F14', '#F5B73D', '#F5B73D', pc(pend), pc(pend) + '% del total') +
-    kp('Publicados / Confirmados', pag, 'Pagado', '#12392F', '#34D399', '#34D399', pc(pag), pc(pag) + '% del total') +
-    kp('Rechazados', rech, 'Rechazado', '#3A1B22', '#F0657A', '#F0657A', pc(rech), pc(rech) + '% del total');
+  $('kpis').innerHTML = kp('Total donaciones', all.length, 'Todas', '#1B2A44', '#9CC0FF', '#4C8DFF', 100, 'Todas las donaciones');
 
   const sum = f => all.filter(f).reduce((a, r) => a + totR(r), 0);
   const act = [...new Set([...modsActivas(), ...all.map(parte)])].filter(k => conf.nums.mods[k]).sort(), pk = k => sum(r => estado(r) === 'Pagado' && parte(r) === k), paid = sum(r => estado(r) === 'Pagado');
@@ -533,10 +529,10 @@ function render() {
   const mp = (l, v, m) => { const pc = Math.min(100, v / m * 100), t = pc > 0 && pc < 10 ? pc.toFixed(1) : Math.round(pc);
     return `<div><div class="r"><span>${l}</span><b>${usd(v)} <em>/ ${usd(m)}</em></b></div><div class="bar"><i style="width:${pc}%;background:#34D399"></i></div><div class="mp">${t}% de la meta</div></div>`; };
   const metaT = act.reduce((a, k) => a + metaDe(k), 0) || 1;
-  $('fin').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;color:#9BE3C6">Total cobrado</span><span class="pill" style="background:#12392F;color:#34D399">Pagos confirmados</span></div>
-    <div><div class="big">${usd(paid)}</div><div class="mp">${(paid / metaT * 100 < 10 && paid ? (paid / metaT * 100).toFixed(1) : Math.round(paid / metaT * 100))}% de la meta total · ${usd(metaT)}</div></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px 32px">${act.map(k => mp('Boletos ' + k + ' · meta ' + fmt(nBol(k)) + ' × ' + usd(PRECIO[k]), pk(k), metaDe(k) || 1)).join('')}</div>
-    <div style="font-size:12px;color:#8FB8A8">Por aprobar: <b style="color:#F5B73D">${usd(sum(r => estado(r) === 'Pendiente'))}</b></div>`;
+  const metaD = Math.max(1, Math.round(Number(conf.sitio.meta)) || 100), pM = Math.min(100, all.length / metaD * 100), tM = pM > 0 && pM < 10 ? pM.toFixed(1) : Math.round(pM);
+  $('fin').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;color:#9BE3C6">Meta de donaciones</span><span class="pill" style="background:#12392F;color:#34D399">${tM}%</span></div>
+    <div><div class="big">${all.length} <span style="font-size:22px;letter-spacing:0;color:#7FAE9C">/ ${metaD}</span></div><div class="mp">${tM}% de la meta · faltan ${Math.max(0, metaD - all.length)}</div></div>
+    <div><div class="bar"><i style="width:${pM}%;background:#34D399"></i></div></div>`;
 
   const card = (k, tit, paidK, m) => {
     const pc = Math.min(100, paidK / m * 100), t = pc > 0 && pc < 10 ? pc.toFixed(1) : Math.round(pc);
@@ -641,7 +637,7 @@ function drawDias() {
 
 // ── configuración ──
 const DEF = {
-  sitio: { nombre: 'Hacer una donación', subtitulo: 'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.', beneficiario: '', campana: '', desc1: '', desc2: '', foto: '', color: '#EAB308', texto: '#000000', idioma: { auto: true, def: 'es', sel: true } },
+  sitio: { nombre: 'Hacer una donación', subtitulo: 'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.', beneficiario: '', campana: '', meta: 100, desc1: '', desc2: '', foto: '', color: '#EAB308', texto: '#000000', idioma: { auto: true, def: 'es', sel: true } },
   pago: { metodos: [] },
   nums: { mods: {
     x1: { on: true, cifras: 2, precio: 25000, nombre: 'Boleto individual' },
@@ -850,7 +846,7 @@ function drawCfg() {
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Título principal', 'sitio.nombre', 'Hacer una donación')}${fl('Subtítulo / frase de impacto', 'sitio.subtitulo', 'Completa el formulario para que tu aporte llegue a quien lo necesita')}</div>
         <div class="prev" id="prev-h">${prevHero()}</div></section>` +
       `<section class="cc" style="grid-column:1/-1">${hd('layers', 'Información de la campaña', 'Explica quién necesita ayuda, la situación y en qué se usará el dinero.')}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Nombre del beneficiario', 'sitio.beneficiario', 'Ej. Familia Gómez')}${fl('Título de la campaña', 'sitio.campana', 'Ej. Ayuda para la operación de Sofía')}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Nombre del beneficiario', 'sitio.beneficiario', 'Ej. Familia Gómez')}${fl('Título de la campaña', 'sitio.campana', 'Ej. Ayuda para la operación de Sofía')}${fl('Meta de donaciones (cantidad)', 'sitio.meta', 'Ej. 100', 'Cantidad de donaciones que quieres lograr. Se muestra en Inicio.', 'number')}</div>
         ${ta('Descripción: quién necesita ayuda y por qué es importante', 'sitio.desc1', 'Describe la situación de forma clara y honesta.')}
         ${ta('Uso del dinero y soportes', 'sitio.desc2', 'Explica en qué se usará lo recaudado y qué soportes verificables existen.')}</section>` +
       card('upload', 'Foto de la campaña', 'Imagen que se muestra junto a la información. Se ajusta sola para que cargue rápido.', `<div class="drop">${conf.sitio.foto ? `<img class="qr" style="width:160px;height:110px;object-fit:cover" src="${esc(conf.sitio.foto)}" alt="Foto de la campaña" ${zoomQR}>` : `<div class="qr qr0" style="width:160px;height:110px">${ic('upload', 36)}</div>`}<div style="display:flex;flex-direction:column;gap:8px"><label class="btn2">${ic('upload', 16)}${conf.sitio.foto ? 'Reemplazar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this)"></label>${conf.sitio.foto ? '<button class="bgh del" onclick="quitarFoto()">Quitar</button>' : '<div class="hint">PNG o JPG</div>'}</div></div>`) +
