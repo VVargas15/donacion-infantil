@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hacer una donación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;min-height:100vh;background:#f6d36b;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:960px;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.left{position:relative;min-height:520px;background:linear-gradient(160deg,#fff8dc,#fbe8a6 60%,#f6d77a);display:flex;align-items:flex-end}
+.ph{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding-top:60px;color:#fff;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.info{position:relative;background:#fff;margin:0 0 24px;width:calc(100% - 0px);max-width:88%;padding:20px 22px;font-size:13px;line-height:1.5;color:#222}
+.brand{display:flex;align-items:center;gap:10px;font-size:13px;color:#111;margin-bottom:12px}
+.brand i{width:28px;height:28px;border:2px solid #111;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-block}
+.info h3{font-size:14px;font-weight:700;margin-bottom:6px;color:#111}.info p+p{margin-top:8px}
+.right{padding:48px 40px;display:flex;flex-direction:column;justify-content:center}
+h1{font-size:30px;font-weight:800;color:#0f2540;text-align:center}
+.sub{text-align:center;color:#6b7280;font-size:13px;margin:6px 0 24px}
+.amts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.amt{padding:9px 4px;border:1px solid #d5dbe3;border-radius:6px;background:#fff;font:600 13px Inter;color:#1f2937;cursor:pointer}
+.amt:hover{border-color:#f2c94c}.amt.on{border-color:#f2c94c;background:#fffaea;box-shadow:0 0 0 2px #fdf0c0}
+.inp{display:flex;align-items:center;gap:10px;margin-top:14px;border:1px solid #d5dbe3;border-radius:6px;padding:0 14px;height:48px}
+.inp b{color:#6b7280;font-weight:500}.inp input{flex:1;border:0;outline:0;font:500 18px Inter;color:#111;min-width:0}
+.inp span{font-size:12px;color:#6b7280}
+.lbl{font-size:13px;font-weight:700;color:#111;margin-bottom:8px}.more{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:#a9811a;text-decoration:underline;cursor:pointer}.fld{width:100%;height:46px;border:1px solid #d5dbe3;border-radius:6px;padding:0 14px;font:400 14px Inter;background:#fafafa;outline:0}.fld:focus{border-color:#f2c94c;background:#fff}.hint{font-size:12px;color:#6b7280;margin-top:6px}.hint.err{color:#dc2626;font-weight:600}.chk{display:flex;gap:8px;align-items:center;margin-top:16px;font-size:12px;color:#4b5563}
+.btn{margin-top:22px;height:44px;border:0;border-radius:6px;background:#f6d36b;color:#2b1d00;font:700 14px Inter;cursor:pointer}
+.btn:hover{background:#eebf3f}
+.note{margin-top:14px;font-size:11px;color:#6b7280;line-height:1.5}
+.tag{position:absolute;top:12px;left:12px;background:#fff;color:#0f2540;font-size:11px;font-weight:700;padding:4px 8px;border-radius:4px}
+@media(max-width:760px){.card{grid-template-columns:1fr}.left{min-height:380px}.right{padding:32px 22px}}
+</style></head><body>
+<div class="card">
+  <div class="left"><div class="ph">[ Imagen de la campaña ]</div>
+    <div class="info">
+      <div class="brand"><i></i><span>Apoyo a<br>[Beneficiario]</span></div>
+      <h3>Campaña: [Título de la campaña]</h3>
+      <p>[Describe aquí quién necesita ayuda, la situación y por qué es importante.]</p>
+      <p>[Explica en qué se usará el dinero y adjunta soportes verificables.]</p>
+    </div>
+  </div>
+  <div class="right">
+    <h1>Hacer una donación</h1>
+    <p class="sub">Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.</p>
+    <div class="lbl">¿Cuánto querés donar? (USD)</div>
+    <div class="amts" id="amts"></div>
+    <a class="more" id="more">Ingresar otro monto</a>
+    <div id="cw" style="display:none">
+      <label class="inp"><b>$</b><input id="v" inputmode="numeric" placeholder="Otro monto"><span>USD</span></label>
+    </div>
+    <div class="hint err" id="hint" style="display:none"></div>
+    <div class="lbl" style="margin-top:18px">Nombre completo</div>
+    <input class="fld" id="nm" placeholder="Ana García">
+    <div class="lbl" style="margin-top:14px">Correo electrónico</div>
+    <input class="fld" id="em" type="email" placeholder="ana@correo.com">
+    <button class="btn" id="go">Donar $20 USD →</button>
+    <div class="hint" id="msg" style="display:none;margin-top:12px;font-size:13px"></div>
+    <p class="note">🔒 Pago seguro. Revisa los datos del titular antes de transferir.</p>
+  </div>
+</div>
+<script>
+const MIN=20,MAX=100000,f=n=>n.toLocaleString('es-CO');
+const a=document.getElementById('amts'),v=document.getElementById('v'),g=document.getElementById('go'),h=document.getElementById('hint');
+let amt=20;
+[20,30,40,50].forEach(n=>{const b=document.createElement('button');b.className='amt'+(n==20?' on':'');b.textContent='$'+n;b.onclick=()=>{amt=n;v.value='';mark();ok(true)};a.append(b)});
+function mark(){[...a.children].forEach(b=>b.classList.toggle('on',b.textContent=='$'+amt))}
+function ok(valid){h.style.display=valid?'none':'block';h.textContent='⚠️ El monto debe ser de $20 o más.';g.disabled=!valid;g.style.opacity=valid?'':'.6';if(valid)g.textContent='Donar $'+f(amt)+' USD →'}
+document.getElementById('more').onclick=()=>{const c=document.getElementById('cw');c.style.display=c.style.display=='none'?'block':'none';v.focus()};
+v.oninput=()=>{const n=parseInt(v.value.replace(/\D/g,''))||0;v.value=n?f(n):'';amt=n;mark();ok(n>=MIN)};
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzOO80RB9FkO-pDj3JmEV6q9dxIH42odoJetED9dWyqyAmdiaIoCGKgyndZVJ-csu-g/exec';
+const msg=document.getElementById('msg');
+function say(t,err){msg.style.display='block';msg.textContent=t;msg.className='hint'+(err?' err':'');msg.style.color=err?'':'#15803d'}
+g.onclick=async()=>{
+  const nombre=document.getElementById('nm').value.trim(),correo=document.getElementById('em').value.trim();
+  if(!nombre||!correo){say('Por favor completa tu nombre y correo.',true);return}
+  if(!/^\S+@\S+\.\S+$/.test(correo)){say('El correo no es válido.',true);return}
+  if(amt<MIN){ok(false);return}
+  g.disabled=true;g.textContent='Enviando…';
+  const body=new URLSearchParams({action:'register',nombre,correo});
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});
+    say('¡Gracias, '+nombre.split(' ')[0]+'! Registramos tu donación de $'+f(amt)+' USD. Te escribiremos a '+correo+' con los datos para completar el aporte.');
+    document.getElementById('nm').value='';document.getElementById('em').value='';
+    g.textContent='Donación registrada ✓';
+  }catch(e){say('No se pudo enviar. Revisa tu conexión e intenta de nuevo.',true);g.disabled=false;ok(true)}
+};
+</script></body></html>
