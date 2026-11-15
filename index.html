@@ -65,7 +65,7 @@ function mark(){[...a.children].forEach(b=>b.classList.toggle('on',b.textContent
 function ok(valid){h.style.display=valid?'none':'block';h.textContent='⚠️ El monto debe ser de $20 o más.';g.disabled=!valid;g.style.opacity=valid?'':'.6';if(valid)g.textContent='Donar $'+f(amt)+' USD →'}
 document.getElementById('more').onclick=()=>{const c=document.getElementById('cw');c.style.display=c.style.display=='none'?'block':'none';v.focus()};
 v.oninput=()=>{const n=parseInt(v.value.replace(/\D/g,''))||0;v.value=n?f(n):'';amt=n;mark();ok(n>=MIN)};
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzOO80RB9FkO-pDj3JmEV6q9dxIH42odoJetED9dWyqyAmdiaIoCGKgyndZVJ-csu-g/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwhKDodOrO2icgEW8BrqfkVPi8-LQhxAiaZ7RLXVzBsyBQcNN7e48cuM8MyYcTFpiBV5A/exec';
 const msg=document.getElementById('msg');
 function say(t,err){msg.style.display='block';msg.textContent=t;msg.className='hint'+(err?' err':'');msg.style.color=err?'':'#15803d'}
 g.onclick=async()=>{
