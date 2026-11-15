@@ -428,7 +428,7 @@ function salir() { KEY = ''; $('app').hidden = true; $('login').hidden = false; 
 function toggleSide() { $('side').classList.toggle('c'); }
 
 // ── menú ──
-const NAV = () => [['dash', 'Inicio', 'grid'], ['reg', 'Donaciones', 'tick'], ['inv', 'Invitaciones', 'users'], ['fin', 'Finanzas', 'chart'], ['elim', 'Eliminados', 'trash'], ['cfg', 'Configuración', 'set']];
+const NAV = () => [['dash', 'Inicio', 'grid'], ['reg', 'Donaciones', 'tick'], ['fin', 'Finanzas', 'chart'], ['elim', 'Eliminados', 'trash'], ['cfg', 'Configuración', 'set']];
 const metNom = r => r.metodo === 'nubank' ? 'Nu / Bre-B' : ((PLAT[r.metodo] || {}).n || r.metodo || 'Binance Pay');
 function drawNav() {
   const nE = registros.filter(esElim).length;
@@ -543,7 +543,11 @@ function render() {
       <div><div class="big">${usd(paidK)}</div><div class="mp">${t}% de la meta · ${usd(m)}</div></div>
       <div><div class="bar"><i style="width:${pc}%;background:#34D399"></i></div><div class="mp">${cp} pagado${cp === 1 ? '' : 's'} · ${cn} pendiente${cn === 1 ? '' : 's'}</div></div>
       <div style="font-size:12px;color:#8FB8A8">Por aprobar: <b style="color:#F5B73D">${usd(pen)}</b></div></section>`; };
-  $('fsplit').innerHTML = act.map(k => card(k, 'Total cobrado · Boletos ' + k + ' (' + usd(PRECIO[k]) + ')', pk(k), metaDe(k) || 1)).join('');
+  const nPag = all.filter(r => estado(r) === 'Pagado').length, nPen = all.filter(r => estado(r) === 'Pendiente').length;
+  $('fsplit').innerHTML = `<section class="fin"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:#9BE3C6">Total de donaciones</span><span class="pill" style="background:#12392F;color:#34D399">Pagos confirmados</span></div>
+      <div><div class="big">${usd(paid)}</div><div class="mp">${tM}% de la meta · ${usd(metaD)}</div></div>
+      <div><div class="bar"><i style="width:${pM}%;background:#34D399"></i></div><div class="mp">${nPag} confirmada${nPag === 1 ? '' : 's'} · ${nPen} pendiente${nPen === 1 ? '' : 's'}</div></div>
+      <div style="font-size:12px;color:#8FB8A8">Por aprobar: <b style="color:#F5B73D">${usd(pend$)}</b></div></section>`;
 
   const rec = all.map(r => ({ r, f: fechaHora(r) })).sort((a, b) => b.f.ts - a.f.ts).slice(0, 8);
   $('hrows').innerHTML = rec.length ? rec.map(({ r, f }) => {
@@ -559,7 +563,6 @@ function render() {
   const V = {
     dash:['Inicio','Resumen de donaciones recibidas.'],
     ...Object.fromEntries(['x1', 'x2', 'x3', 'x4', 'x5'].map(k => [k, ['Boletos ' + k, subMod(k)]])),
-    inv:['Invitaciones','Quién invitó a cada participante y cuántos registros trajo.'],
     reg:['Donaciones','Estado, nombre, correo y fecha de cada donación.'],
     cfg:['Configuración del Sistema','Gestiona las reglas, métodos de pago y notificaciones'],
     elim:['Eliminados','Registros eliminados. Puedes restaurarlos o borrarlos para siempre.'],
@@ -571,8 +574,8 @@ function render() {
   $('kpis').hidden = !(active === 'dash');
   $('fin').hidden = active !== 'dash'; $('fsplit').hidden = active !== 'fin';
   $('hist').hidden = active !== 'dash';
-  $('dias').hidden = active !== 'fin'; if (active === 'fin') drawDias();
-  $('invs').hidden = active !== 'inv'; if (active === 'inv') drawInv();
+  $('dias').hidden = true;
+  $('invs').hidden = true;
   $('cfgv').hidden = active !== 'cfg'; if (active === 'cfg') drawCfg();
   $('tabla').hidden = !(/^x\d$/.test(active) || active === 'reg' || active === 'elim');
   $('th-t').textContent = V[active][0] + ' · ' + lista.length + (lista.length === 1 ? ' registro' : ' registros');  const amb = (active === 'elim' ? elim : all).filter(r => /^x\d$/.test(active) ? parte(r) === active : true).length;
