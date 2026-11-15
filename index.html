@@ -9,6 +9,7 @@ body{font-family:Inter,sans-serif;min-height:100vh;background:var(--c);display:f
 .card{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:960px;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .card.solo{grid-template-columns:1fr;max-width:520px}.card.solo .left{display:none}
 .left{position:relative;min-height:520px;background:linear-gradient(160deg,#fff8dc,#fbe8a6 60%,#f6d77a) center/cover no-repeat;display:flex;align-items:flex-end}
+.left:not(.foto)::after{content:'[ IMAGEN DE LA CAMPAÑA ]';position:absolute;top:70px;left:0;right:0;text-align:center;color:#fff;font:700 11px Inter;letter-spacing:.12em}
 .info{position:relative;background:#fff;margin:0 0 24px;max-width:88%;padding:20px 22px;font-size:13px;line-height:1.5;color:#222}
 .brand{display:flex;align-items:center;gap:10px;font-size:13px;color:#111;margin-bottom:12px}
 .brand i{width:28px;height:28px;border:2px solid #111;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-block;flex:none}
@@ -86,14 +87,14 @@ function paint(){
   document.title=cv(s.nombre,'title');
   $('h1').textContent=cv(s.nombre,'title');$('sub').textContent=cv(s.subtitulo,'sub');
   $('tHow').textContent=t.how;$('more').textContent=t.other;$('v').placeholder=t.otherPh;$('tName').textContent=t.name;$('tMail').textContent=t.mail;$('note').textContent=t.note;$('payT').textContent=t.payT;
-  const ben=(s.beneficiario||'').trim(),cam=(s.campana||'').trim(),d1=(s.desc1||'').trim(),d2=(s.desc2||'').trim(),foto=String(s.foto||'').trim();
-  $('brand').style.display=ben?'flex':'none';$('brandT').textContent=ben?t.support+' '+ben:'';
-  $('camp').style.display=cam?'block':'none';$('camp').textContent=cam?t.camp+' '+cam:'';
-  $('d1').style.display=d1?'block':'none';$('d1').textContent=d1;$('d2').style.display=d2?'block':'none';$('d2').textContent=d2;
-  const hasInfo=ben||cam||d1||d2,fu=fotoUrl(foto),hasFoto=/^data:image\/|^https?:\/\//.test(fu);
+  const ben=(s.beneficiario||'').trim()||'[Beneficiario]',cam=(s.campana||'').trim()||'[Título de la campaña]',d1=(s.desc1||'').trim()||'[Describe aquí quién necesita ayuda, la situación y por qué es importante.]',d2=(s.desc2||'').trim()||'[Explica en qué se usará el dinero y adjunta soportes verificables.]',foto=String(s.foto||'').trim();
+  $('brand').style.display='flex';$('brandT').textContent=t.support+' '+ben;
+  $('camp').style.display='block';$('camp').textContent=t.camp+' '+cam;
+  $('d1').style.display='block';$('d1').textContent=d1;$('d2').style.display='block';$('d2').textContent=d2;
+  const fu=fotoUrl(foto),hasFoto=/^data:image\/|^https?:\/\//.test(fu);
   $('left').style.backgroundImage=hasFoto?'url("'+fu.replace(/"/g,'%22')+'")':'';
-  $('info').style.display=hasInfo?'block':'none';$('left').classList.toggle('foto',hasFoto);
-  $('card').classList.toggle('solo',!hasInfo&&!hasFoto);
+  $('info').style.display='block';$('left').classList.toggle('foto',hasFoto);
+  $('card').classList.remove('solo');
   const sel=$('lang');sel.style.display=(s.idioma&&s.idioma.sel===false)?'none':'';sel.value=L;
   renderBtn();
   if($('hint').style.display==='block')$('hint').textContent=t.errAmt;

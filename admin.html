@@ -754,9 +754,14 @@ function subirFoto(inp) {
   if (f.size > 12 * 1024 * 1024) return toast('La imagen pesa más de 12 MB', true);
   const rd = new FileReader();
   rd.onload = () => { const im = new Image();
-    im.onload = () => { const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
-      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
-      conf.sitio.foto = c.toDataURL('image/jpeg', 0.8); drawCfg(); };
+    im.onload = () => { let m = 900, q = 0.72, out = '';
+      for (let i = 0; i < 12; i++) {
+        const k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', q); if (out.length <= 45000) break;
+        if (q > 0.45) q -= 0.08; else m = Math.round(m * 0.8);
+      }
+      conf.sitio.foto = out; drawCfg(); confBar(); };
     im.onerror = () => toast('No se pudo leer la imagen', true); im.src = rd.result; };
   rd.readAsDataURL(f);
 }
