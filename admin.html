@@ -574,7 +574,7 @@ function render() {
   $('kpis').hidden = !(active === 'dash');
   $('fin').hidden = active !== 'dash'; $('fsplit').hidden = active !== 'fin';
   $('hist').hidden = active !== 'dash';
-  $('dias').hidden = true;
+  $('dias').hidden = active !== 'fin'; if (active === 'fin') drawDias();
   $('invs').hidden = true;
   $('cfgv').hidden = active !== 'cfg'; if (active === 'cfg') drawCfg();
   $('tabla').hidden = !(/^x\d$/.test(active) || active === 'reg' || active === 'elim');
