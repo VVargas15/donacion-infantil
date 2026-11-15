@@ -760,7 +760,7 @@ async function verificarSitio() {
     L.push((s.color ? '✅' : '⚠️') + ' Color: ' + (s.color || 'no llegó'));
     if (m.length !== conf.pago.metodos.length || !s.foto !== !conf.sitio.foto) L.push('→ Hay diferencias: pulsa “Publicar ahora”.');
     el.textContent = L.join('\n');
-  } catch (e) { el.textContent = '❌ Sin respuesta del servidor. Revisa que la implementación sea “Cualquier persona” y una Nueva versión.'; }
+  } catch (e) { el.textContent = '❌ La página pública NO puede leer el servidor (por eso no ve tus métodos de pago).\nCausa casi segura: la implementación del Apps Script no es pública.\nArréglalo así: script.google.com > tu proyecto > Implementar > Administrar implementaciones > lápiz > Versión: Nueva versión > Quién tiene acceso: Cualquier persona > Implementar.\nLuego pulsa “Publicar ahora” y “Verificar sitio” otra vez.'; }
 }
 function publicarAhora() {
   try { localStorage.setItem('rifa_cfg', JSON.stringify(conf)); } catch (e) {}
@@ -902,6 +902,7 @@ function drawCfg() {
     <div style="margin-top:16px">${card('globe', 'Conexión con el sitio', 'Comprueba que lo que guardas aquí llega a la página pública (textos, foto, color y métodos de pago).', `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bgh" onclick="publicarAhora()">Publicar ahora</button><button class="bgh" onclick="verificarSitio()">Verificar sitio</button></div><div class="ej" id="conn-s" style="margin-top:10px;white-space:pre-line">Pulsa “Verificar sitio” para ver qué está recibiendo la página pública.</div>`)}</div>
     ${ctab === 'pago' ? '' : `<div class="sbar"><span class="st2" id="sb-s"></span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bgh" id="sb-d" onclick="descartarCfg()">Descartar</button><button class="bsave" id="sb-g" onclick="guardarCfg()">${ic('save', 18)}${ctab === 'mail' ? 'Guardar ajustes de avisos' : ctab === 'web' ? 'Guardar cambios en el Sitio Web' : 'Guardar cambios'}</button></div></div>`}`;
   confBar();
+  if (!window._vAuto) { window._vAuto = 1; setTimeout(verificarSitio, 400); }
 }
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-a]'); if (!b) return;
