@@ -157,5 +157,5 @@ function showDbg(j){const p=document.createElement('pre');p.style.cssText='posit
 L=pickLang();paint();
 fetch(SCRIPT_URL+'?action=publicconfig',{redirect:'follow',cache:'no-store'}).then(r=>r.json()).then(j=>{
   if(j&&j.ok&&j.data){CFG=norm(j.data);if(/[?&]debug/.test(location.search))showDbg(j.data);applyColor();L=pickLang();paint()}else if(/[?&]debug/.test(location.search))showDbg(j)
-}).catch(()=>{});
+}).catch(e=>{if(/[?&]debug/.test(location.search))showDbg({error:String(e),aviso:'El servidor no devolvió JSON: revisa que la implementación sea Cualquier persona y Nueva versión'})});
 </script></body></html>
