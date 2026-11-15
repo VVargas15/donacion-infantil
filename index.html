@@ -34,6 +34,23 @@ h1{font-size:30px;font-weight:800;color:#0f2540;text-align:center}
 .pay h4{font-size:13px;margin-bottom:8px;color:#111}
 .pm{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid #e5e7eb;font-size:13px;color:#374151}.pm:first-of-type{border-top:0}
 .pm b{display:block;color:#111}.pm img{width:72px;height:72px;object-fit:contain;background:#fff;border:1px solid #e5e7eb;border-radius:6px;margin-left:auto}
+.back{display:inline-block;font-size:13px;font-weight:700;color:color-mix(in srgb,var(--c) 55%,#000);cursor:pointer;text-decoration:none;margin-bottom:16px}
+.ptitle{font-size:24px;font-weight:800;color:#0f2540}.ptitle span{color:color-mix(in srgb,var(--c) 65%,#000)}
+.psub{font-size:13px;color:#6b7280;margin:4px 0 16px}.psub b{color:#111}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #d5dbe3;border-radius:10px;background:#fff;font:600 13px Inter;color:#374151;cursor:pointer}
+.chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#fff);box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 25%,#fff)}
+.ic{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;flex:none}
+.pbox{margin-top:16px;border:1px solid #e5e7eb;border-radius:14px;background:#fafafa;padding:18px;text-align:center}
+.ph{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:14px;color:#111;margin-bottom:14px}
+.pd{background:#fff;border-radius:10px;padding:16px 12px}
+.hold{font-size:12px;color:#6b7280;margin-bottom:6px}
+.val{font-size:18px;font-weight:800;color:#111;word-break:break-all;line-height:1.3}
+.cp{margin-top:12px;border:0;border-radius:8px;padding:8px 18px;background:color-mix(in srgb,var(--c) 70%,#000);color:#fff;font:700 13px Inter;cursor:pointer}
+.qr{display:block;margin:14px auto 0;width:160px;height:160px;object-fit:contain;background:#fff;border:1px solid #e5e7eb;border-radius:10px}
+.warn{margin-top:16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.5;color:#166534}.warn b{color:#111}
+.okc{text-align:center;padding:20px 0}.okI{width:56px;height:56px;border-radius:50%;background:#dcfce7;color:#15803d;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.okc p{font-size:15px;line-height:1.6;color:#111}
 @media(max-width:760px){.card{grid-template-columns:1fr}.left{min-height:0;padding:16px;align-items:stretch}.left.foto{min-height:260px;align-items:flex-end}.info{margin:0;max-width:none;width:100%;border-radius:8px}.right{padding:48px 22px 32px}}
 </style></head><body>
 <div class="card" id="card">
@@ -47,6 +64,7 @@ h1{font-size:30px;font-weight:800;color:#0f2540;text-align:center}
   </div>
   <div class="right">
     <select class="lang" id="lang" aria-label="Idioma"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option></select>
+    <div id="s1">
     <h1 id="h1"></h1>
     <p class="sub" id="sub"></p>
     <div class="lbl" id="tHow"></div>
@@ -62,19 +80,30 @@ h1{font-size:30px;font-weight:800;color:#0f2540;text-align:center}
     <input class="fld" id="em" type="email" placeholder="ana@correo.com" autocomplete="email">
     <button class="btn" id="go"></button>
     <div class="hint" id="msg" style="display:none;margin-top:12px;font-size:13px"></div>
-    <div class="pay" id="pay" style="display:none"><h4 id="payT"></h4><div id="payL"></div></div>
     <p class="note" id="note"></p>
+    </div>
+    <div id="s2" style="display:none">
+      <a class="back" id="back" role="button" tabindex="0"></a>
+      <h2 class="ptitle" id="pT"></h2>
+      <p class="psub" id="pS"></p>
+      <div class="chips" id="chips"></div>
+      <div class="pbox" id="pbox"></div>
+      <div class="warn" id="warn"></div>
+      <button class="btn" id="done" type="button"></button>
+      <div class="hint err" id="msg2" style="display:none;margin-top:12px;font-size:13px"></div>
+    </div>
+    <div id="s3" style="display:none"><div class="okc"><div class="okI">✓</div><p id="okT"></p></div></div>
   </div>
 </div>
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwhKDodOrO2icgEW8BrqfkVPi8-LQhxAiaZ7RLXVzBsyBQcNN7e48cuM8MyYcTFpiBV5A/exec';
 const MIN=20,f=n=>n.toLocaleString('es-CO'),$=id=>document.getElementById(id);
 const T={
-es:{title:'Hacer una donación',sub:'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.',how:'¿Cuánto quieres donar? (USD)',other:'Ingresar otro monto',otherPh:'Otro monto',name:'Nombre completo',mail:'Correo electrónico',btn:'Donar $%s USD →',note:'🔒 Pago seguro. Revisa los datos del titular antes de transferir.',support:'Apoyo a',camp:'Campaña:',errAmt:'⚠️ El monto debe ser de $20 o más.',missing:'Por favor completa tu nombre y correo.',badMail:'El correo no es válido.',sending:'Enviando…',done:'Donación registrada ✓',net:'No se pudo enviar. Revisa tu conexión e intenta de nuevo.',thanks:'¡Gracias, %n! Registramos tu donación de $%a USD. Te escribiremos a %e para confirmarla.',payT:'Datos para completar tu donación'},
-en:{title:'Make a donation',sub:'Fill in the form so your contribution goes directly to support their recovery.',how:'How much would you like to donate? (USD)',other:'Enter another amount',otherPh:'Other amount',name:'Full name',mail:'Email address',btn:'Donate $%s USD →',note:'🔒 Secure payment. Check the account holder details before transferring.',support:'Support for',camp:'Campaign:',errAmt:'⚠️ The amount must be $20 or more.',missing:'Please enter your name and email.',badMail:'The email is not valid.',sending:'Sending…',done:'Donation registered ✓',net:'Could not send. Check your connection and try again.',thanks:'Thank you, %n! We registered your donation of $%a USD. We will email %e to confirm it.',payT:'Details to complete your donation'},
-pt:{title:'Fazer uma doação',sub:'Preencha o formulário para que sua contribuição ajude diretamente na recuperação.',how:'Quanto você quer doar? (USD)',other:'Informar outro valor',otherPh:'Outro valor',name:'Nome completo',mail:'E-mail',btn:'Doar $%s USD →',note:'🔒 Pagamento seguro. Confira os dados do titular antes de transferir.',support:'Apoio a',camp:'Campanha:',errAmt:'⚠️ O valor deve ser de $20 ou mais.',missing:'Por favor, preencha seu nome e e-mail.',badMail:'O e-mail não é válido.',sending:'Enviando…',done:'Doação registrada ✓',net:'Não foi possível enviar. Verifique sua conexão e tente de novo.',thanks:'Obrigado, %n! Registramos sua doação de $%a USD. Enviaremos um e-mail para %e para confirmar.',payT:'Dados para concluir sua doação'}
+es:{title:'Hacer una donación',sub:'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.',how:'¿Cuánto quieres donar? (USD)',other:'Ingresar otro monto',otherPh:'Otro monto',name:'Nombre completo',mail:'Correo electrónico',btn:'Donar $%s USD →',note:'🔒 Pago seguro. Revisa los datos del titular antes de transferir.',support:'Apoyo a',camp:'Campaña:',errAmt:'⚠️ El monto debe ser de $20 o más.',missing:'Por favor completa tu nombre y correo.',badMail:'El correo no es válido.',sending:'Enviando…',done:'Donación registrada ✓',net:'No se pudo enviar. Revisa tu conexión e intenta de nuevo.',thanks:'¡Gracias, %n! Registramos tu donación de $%a USD. Te escribiremos a %e para confirmarla.',back:'← Volver',payA:'Método de ',payB:'pago',paySub:'Donación de <b>$%a USD</b>. Elige cómo pagar:',copy:'Copiar',copied:'¡Copiado!',holder:'Titular:',warn1:'Envía exactamente el monto indicado. Después de transferir, escríbenos',warnTo:' a ',warn2:' con tu comprobante.',transferred:'Ya transferí →'},
+en:{title:'Make a donation',sub:'Fill in the form so your contribution goes directly to support their recovery.',how:'How much would you like to donate? (USD)',other:'Enter another amount',otherPh:'Other amount',name:'Full name',mail:'Email address',btn:'Donate $%s USD →',note:'🔒 Secure payment. Check the account holder details before transferring.',support:'Support for',camp:'Campaign:',errAmt:'⚠️ The amount must be $20 or more.',missing:'Please enter your name and email.',badMail:'The email is not valid.',sending:'Sending…',done:'Donation registered ✓',net:'Could not send. Check your connection and try again.',thanks:'Thank you, %n! We registered your donation of $%a USD. We will email %e to confirm it.',back:'← Back',payA:'Payment ',payB:'method',paySub:'Donation of <b>$%a USD</b>. Choose how to pay:',copy:'Copy',copied:'Copied!',holder:'Holder:',warn1:'Send exactly the amount shown. After transferring, write to us',warnTo:' at ',warn2:' with your receipt.',transferred:'I have transferred →'},
+pt:{title:'Fazer uma doação',sub:'Preencha o formulário para que sua contribuição ajude diretamente na recuperação.',how:'Quanto você quer doar? (USD)',other:'Informar outro valor',otherPh:'Outro valor',name:'Nome completo',mail:'E-mail',btn:'Doar $%s USD →',note:'🔒 Pagamento seguro. Confira os dados do titular antes de transferir.',support:'Apoio a',camp:'Campanha:',errAmt:'⚠️ O valor deve ser de $20 ou mais.',missing:'Por favor, preencha seu nome e e-mail.',badMail:'O e-mail não é válido.',sending:'Enviando…',done:'Doação registrada ✓',net:'Não foi possível enviar. Verifique sua conexão e tente de novo.',thanks:'Obrigado, %n! Registramos sua doação de $%a USD. Enviaremos um e-mail para %e para confirmar.',back:'← Voltar',payA:'Método de ',payB:'pagamento',paySub:'Doação de <b>$%a USD</b>. Escolha como pagar:',copy:'Copiar',copied:'Copiado!',holder:'Titular:',warn1:'Envie exatamente o valor indicado. Depois de transferir, escreva para nós',warnTo:' em ',warn2:' com o comprovante.',transferred:'Já transferi →'}
 };
-const PLAT={nequi:'Nequi',nu:'Nu / Bre-B',breb:'Bre-B',binance:'Binance Pay',bancolombia:'Bancolombia',daviplata:'Daviplata',usdt:'Billetera USDT'};
+const PLAT={paypal:'PayPal',btc:'BTC',nequi:'Nequi',nu:'Nu / Bre-B',breb:'Bre-B',binance:'Binance Pay',bancolombia:'Bancolombia',daviplata:'Daviplata',usdt:'Billetera USDT'};
 let CFG={sitio:{},pago:{metodos:[]}},L='es',amt=20,sent=false;
 const S=()=>CFG.sitio||{};
 // texto del admin: si es el original en español se traduce; si lo personalizó, se muestra tal cual
@@ -86,7 +115,7 @@ function paint(){
   const s=S(),t=T[L];document.documentElement.lang=L;
   document.title=cv(s.nombre,'title');
   $('h1').textContent=cv(s.nombre,'title');$('sub').textContent=cv(s.subtitulo,'sub');
-  $('tHow').textContent=t.how;$('more').textContent=t.other;$('v').placeholder=t.otherPh;$('tName').textContent=t.name;$('tMail').textContent=t.mail;$('note').textContent=t.note;$('payT').textContent=t.payT;
+  $('tHow').textContent=t.how;$('more').textContent=t.other;$('v').placeholder=t.otherPh;$('tName').textContent=t.name;$('tMail').textContent=t.mail;$('note').textContent=t.note;$('back').textContent=t.back;$('pT').textContent=t.payA;{const sp=document.createElement('span');sp.textContent=t.payB;$('pT').append(sp)}if(!$('done').disabled)$('done').textContent=t.transferred;
   const ben=(s.beneficiario||'').trim()||'[Beneficiario]',cam=(s.campana||'').trim()||'[Título de la campaña]',d1=(s.desc1||'').trim()||'[Describe aquí quién necesita ayuda, la situación y por qué es importante.]',d2=(s.desc2||'').trim()||'[Explica en qué se usará el dinero y adjunta soportes verificables.]',foto=String(s.foto||'').trim();
   $('brand').style.display='flex';$('brandT').textContent=t.support+' '+ben;
   $('camp').style.display='block';$('camp').textContent=t.camp+' '+cam;
@@ -98,17 +127,34 @@ function paint(){
   const sel=$('lang');sel.style.display=(s.idioma&&s.idioma.sel===false)?'none':'';sel.value=L;
   renderBtn();
   if($('hint').style.display==='block')$('hint').textContent=t.errAmt;
-  paintPay();
+  if(step===2)drawPay();
 }
 function renderBtn(){const g=$('go');if(sent){g.textContent=T[L].done;g.disabled=true;return}g.textContent=fmtT(T[L].btn,{s:f(amt)});g.disabled=amt<MIN;g.style.opacity=amt<MIN?'.6':''}
-function paintPay(){
-  const m=(CFG.pago&&CFG.pago.metodos)||[],box=$('payL');box.textContent='';
-  if(!sent||!m.length){$('pay').style.display='none';return}
-  m.forEach(x=>{const r=document.createElement('div');r.className='pm';const d=document.createElement('div'),b=document.createElement('b');
-    b.textContent=PLAT[x.tipo]||x.tipo||'';d.append(b,document.createTextNode([x.titular,x.dato].filter(Boolean).join(' · ')));r.append(d);
-    if(/^data:image\//.test(x.qr||'')){const i=document.createElement('img');i.src=x.qr;i.alt='QR';r.append(i)}box.append(r)});
-  $('pay').style.display='block';
+let step=1,sel=0,donor={};
+const GL={paypal:['P','#0070BA'],binance:['B','#F0B90B'],btc:['₿','#F7931A'],usdt:['T','#26A17B'],nequi:['N','#C026D3'],nu:['N','#820AD1'],breb:['B','#0EA5E9'],bancolombia:['B','#FDDA24'],daviplata:['D','#E11D48']};
+const methods=()=>((CFG.pago&&CFG.pago.metodos)||[]).filter(x=>x&&(x.dato||x.titular));
+function badge(tipo,sz){const g=GL[tipo]||[String(PLAT[tipo]||'?')[0],'#6b7280'],e=document.createElement('span');e.className='ic';e.style.cssText='background:'+g[1]+';width:'+sz+'px;height:'+sz+'px;font-size:'+Math.round(sz*.5)+'px;color:'+(tipo==='bancolombia'?'#111':'#fff');e.textContent=g[0];return e}
+function copyTxt(v,btn){const t=T[L],ok=()=>{btn.textContent=t.copied;setTimeout(()=>btn.textContent=t.copy,1500)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(ok,()=>fb())}else fb();
+  function fb(){const a=document.createElement('textarea');a.value=v;a.style.cssText='position:fixed;opacity:0';document.body.append(a);a.select();try{document.execCommand('copy');ok()}catch(e){}a.remove()}}
+function drawPay(){
+  const t=T[L],m=methods();if(sel>=m.length)sel=0;
+  $('pS').innerHTML=fmtT(t.paySub,{a:f(amt)});
+  const box=$('chips');box.textContent='';
+  m.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.className='chip'+(i===sel?' on':'');b.append(badge(x.tipo,22),document.createTextNode(PLAT[x.tipo]||x.tipo||''));b.onclick=()=>{sel=i;drawPay()};box.append(b)});
+  const x=m[sel],pb=$('pbox');pb.textContent='';if(!x)return;
+  const ph=document.createElement('div');ph.className='ph';const nm=document.createElement('span');nm.textContent=PLAT[x.tipo]||x.tipo||'';ph.append(badge(x.tipo,32),nm);
+  const pd=document.createElement('div');pd.className='pd';
+  if(x.dato&&x.titular){const h=document.createElement('div');h.className='hold';h.textContent=t.holder+' '+x.titular;pd.append(h)}
+  const val=x.dato||x.titular,v=document.createElement('div');v.className='val';v.textContent=val;
+  const cb=document.createElement('button');cb.type='button';cb.className='cp';cb.textContent=t.copy;cb.onclick=()=>copyTxt(val,cb);
+  pd.append(v,cb);pb.append(ph,pd);
+  if(/^data:image\//.test(x.qr||'')){const i=document.createElement('img');i.className='qr';i.src=x.qr;i.alt='QR';pb.append(i)}
+  const w=$('warn'),c=String(S().contacto||'').trim();w.textContent='⚠️ '+t.warn1;
+  if(c){w.append(document.createTextNode(t.warnTo));const b=document.createElement('b');b.textContent=c;w.append(b)}
+  w.append(document.createTextNode(t.warn2));
 }
+function showStep(n){step=n;$('s1').style.display=n===1?'':'none';$('s2').style.display=n===2?'':'none';$('s3').style.display=n===3?'':'none';if(n===2)drawPay();$('card').scrollIntoView({block:'start'})}
 function say(t,err){const m=$('msg');m.style.display='block';m.textContent=t;m.className='hint'+(err?' err':'');m.style.color=err?'':'#15803d'}
 function ok(valid){const h=$('hint');h.style.display=valid?'none':'block';h.textContent=T[L].errAmt;renderBtn()}
 // montos
@@ -125,19 +171,26 @@ function pickLang(){
   if(i.auto!==false){const n=(navigator.language||'').slice(0,2).toLowerCase();if(T[n])return n}
   return def;
 }
-// enviar
-$('go').onclick=async()=>{
+// paso 1 -> paso 2 (método de pago) -> registrar al confirmar "Ya transferí"
+$('go').onclick=()=>{
   const nombre=$('nm').value.trim(),correo=$('em').value.trim(),t=T[L];
   if(!nombre||!correo){say(t.missing,true);return}
   if(!/^\S+@\S+\.\S+$/.test(correo)){say(t.badMail,true);return}
   if(amt<MIN){ok(false);return}
-  const g=$('go');g.disabled=true;g.textContent=t.sending;
-  try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'register',nombre,correo,monto:String(amt)}).toString()});
-    sent=true;say(fmtT(t.thanks,{n:nombre.split(' ')[0],a:f(amt),e:correo}));
-    $('nm').value='';$('em').value='';renderBtn();paintPay();
-  }catch(e){say(t.net,true);g.disabled=false;renderBtn()}
+  donor={nombre,correo,monto:amt};$('msg').style.display='none';
+  if(methods().length)showStep(2);else finish();
 };
+$('back').onclick=()=>showStep(1);
+$('back').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')showStep(1)};
+$('done').onclick=()=>finish();
+async function finish(){
+  const t=T[L],d=$('done'),m2=$('msg2');m2.style.display='none';d.disabled=true;d.textContent=t.sending;
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'register',nombre:donor.nombre,correo:donor.correo,monto:String(donor.monto)}).toString()});
+    sent=true;$('okT').textContent=fmtT(t.thanks,{n:donor.nombre.split(' ')[0],a:f(donor.monto),e:donor.correo});
+    $('nm').value='';$('em').value='';showStep(3);
+  }catch(e){m2.style.display='block';m2.textContent=t.net;d.disabled=false;d.textContent=t.transferred}
+}
 // normaliza nombres de campos que pueda enviar el admin
 function norm(d){
   const raw=d.sitio||d.site||d.web||d.config||d,g=(...k)=>{for(const x of k){const v=raw[x]!==undefined?raw[x]:d[x];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v}return ''};
@@ -148,6 +201,7 @@ function norm(d){
     campana:g('campana','campaña','tituloCampana','titulo_campana','campaign'),
     desc1:g('desc1','descripcion','description','descripcion1'),
     desc2:g('desc2','uso','usoDinero','uso_dinero','soportes','descripcion2'),
+    contacto:g('contacto','correoContacto'),
     foto:g('foto','imagen','image','fotoCampana','foto_campana','fotoUrl')
   });
   return {sitio,pago:d.pago||d.pagos||{metodos:d.metodos||[]}};

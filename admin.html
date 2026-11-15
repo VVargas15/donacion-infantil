@@ -780,9 +780,11 @@ const PLAT = {
   binance: { n: 'Binance Pay', t: 'Alias o Pay ID', tp: 'Ej. @alias o 123456789', d: null },
   bancolombia: { n: 'Bancolombia', t: 'Nombre del titular', tp: 'Ej. Valentina Gómez', d: 'Número de cuenta', dp: '00000000000' },
   daviplata: { n: 'Daviplata', t: 'Nombre del titular', tp: 'Ej. Valentina', d: 'Número de celular', dp: '3001234567', ty: 'tel' },
+  paypal: { n: 'PayPal', t: 'Nombre del titular', tp: 'Ej. Valentina Gómez', d: 'Correo de PayPal', dp: 'correo@ejemplo.com', ty: 'email' },
+  btc: { n: 'Bitcoin (BTC)', t: 'Nombre o etiqueta', tp: 'Ej. Mi billetera', d: 'Dirección BTC', dp: 'Dirección completa' },
   usdt: { n: 'Billetera USDT', t: 'Nombre o etiqueta', tp: 'Ej. Mi billetera', d: 'Dirección de la billetera', dp: 'Dirección completa' }
 };
-const LOGO = { nequi: '#C026D3', nu: '#820AD1', breb: '#0EA5E9', binance: '#F0B90B', bancolombia: '#FDDA24', daviplata: '#E11D48', usdt: '#26A17B' };
+const LOGO = { nequi: '#C026D3', nu: '#820AD1', breb: '#0EA5E9', binance: '#F0B90B', bancolombia: '#FDDA24', daviplata: '#E11D48', usdt: '#26A17B', paypal: '#0070BA', btc: '#F7931A' };
 let pdraft = null;
 function pNuevo() { pdraft = { id: null, tipo: '', titular: '', dato: '', qr: '' }; drawCfg(); }
 function pEditar(id) { const m = conf.pago.metodos.find(x => x.id === id); if (m) { pdraft = { ...m }; drawCfg(); } }
