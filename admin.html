@@ -641,9 +641,7 @@ function drawDias() {
 
 // ── configuración ──
 const DEF = {
-  sitio: { nombre: 'Donaciones', etiqueta: '💚 TU AYUDA CUENTA', subtitulo: '¡Gracias por tu donación!', moneda: 'COP', color: '#1D4ED8', texto: '#FFFFFF', whatsapp: '', idioma: { auto: true, def: 'es', sel: true },
-    premiosTitulo: '¿Qué puedes ganar?', premiosSub: 'Premios principales para los ganadores',
-    premios: [{ puesto: '1.º Lugar (Gran Premio)', valor: '$500.000 COP', mod: 'x1' }, { puesto: '1.º Lugar (Gran Premio)', valor: '$1.000.000 COP', mod: 'x3' }] },
+  sitio: { nombre: 'Hacer una donación', subtitulo: 'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.', beneficiario: '', campana: '', desc1: '', desc2: '', foto: '', color: '#EAB308', texto: '#000000', idioma: { auto: true, def: 'es', sel: true } },
   pago: { metodos: [] },
   nums: { mods: {
     x1: { on: true, cifras: 2, precio: 25000, nombre: 'Boleto individual' },
@@ -679,6 +677,8 @@ try {
   }
   conf = mix(DEF, g);
 } catch (e) { conf = mix(DEF); }
+function limpiaSitio() { const s = conf.sitio; if (/rifa|premio|suerte|cupos/i.test([s.nombre, s.subtitulo].join(' '))) { s.nombre = DEF.sitio.nombre; s.subtitulo = DEF.sitio.subtitulo; } }
+limpiaSitio();
 confSaved = JSON.parse(JSON.stringify(conf));
 const confDirty = () => JSON.stringify(conf) !== JSON.stringify(confSaved);
 const gp = p => p.split('.').reduce((o, k) => o[k], conf);
@@ -730,22 +730,15 @@ async function pullConfig() {
     if (!j.ok || !j.data) return;
     // El servidor aún no tiene configuración publicada (precios, moneda, correos): se publica la del panel automáticamente
     if (!j.data.savedAt) { confSaved = JSON.parse(JSON.stringify(conf)); syncServer().then(ok => toast(ok ? 'Panel conectado: precios y ajustes publicados en el servidor' : 'No se pudo conectar el panel con el servidor', !ok)); return; }
-    const adm = conf.mail.admin; conf = mix(DEF, j.data); if (!conf.mail.admin) conf.mail.admin = adm;
+    const adm = conf.mail.admin; conf = mix(DEF, j.data); limpiaSitio(); if (!conf.mail.admin) conf.mail.admin = adm;
     confSaved = JSON.parse(JSON.stringify(conf)); try { localStorage.setItem('rifa_cfg', JSON.stringify(conf)); } catch (e) {}
     drawNav(); render();
   } catch (e) {}
 }
 function guardarCfg() {
-  const dg = String(conf.sitio.whatsapp).replace(/\D/g, ''), c = Number(conf.nums.cols);
   if (!conf.sitio.nombre.trim()) { setTab('web'); return toast('Escribe el título principal', true); }
-  const sp0 = conf.sitio.premios.findIndex(p => !String(p.valor).trim());
-  if (sp0 >= 0) { setTab('web'); return toast('Falta el valor del premio ' + (sp0 + 1), true); }
-  if (conf.sitio.whatsapp && (dg.length < 8 || dg.length > 15)) { setTab('web'); return toast('El número de WhatsApp no es válido', true); }
   if (ctab === 'mail' && conf.mail.alertas && !conf.mail.admin.trim()) { setTab('mail'); return toast('Escribe tu correo para recibir las alertas', true); }
   if (conf.mail.admin && !/^\S+@\S+\.\S+$/.test(conf.mail.admin.trim())) { setTab('mail'); return toast('Tu correo no es válido', true); }
-  if (!(c >= 3 && c <= 20)) { setTab('num'); return toast('Las columnas deben ser entre 3 y 20', true); }
-  for (const [k, m] of Object.entries(conf.nums.mods)) { if (m.on && !(Number(m.precio) > 0)) { setTab('num'); return toast('Define el precio de la modalidad ' + k, true); } m.precio = Number(m.precio) || 0; }
-  conf.nums.cols = Math.round(c);
   try { localStorage.setItem('rifa_cfg', JSON.stringify(conf)); }
   catch (e) { return toast('No se pudo guardar en este navegador', true); }
   confSaved = JSON.parse(JSON.stringify(conf)); drawCfg(); publicar('Configuración guardada');
@@ -754,6 +747,20 @@ function descartarCfg() { conf = JSON.parse(JSON.stringify(confSaved)); drawNav(
 const hd = (icn, t, d) => `<div class="cch"><i>${ic(icn, 20)}</i><div><b>${t}</b><small>${d}</small></div></div>`;
 const card = (icn, t, d, inner) => `<section class="cc">${hd(icn, t, d)}${inner}</section>`;
 const fl = (lbl, p, ph, hlp, ty) => `<div class="fld"><label for="f-${p}">${lbl}</label><input id="f-${p}" type="${ty || 'text'}" value="${esc(gp(p))}" placeholder="${esc(ph || '')}" autocomplete="off" oninput="cfgIn('${p}',this.value)">${hlp ? `<small>${hlp}</small>` : ''}</div>`;
+const ta = (lbl, p, ph, hlp) => `<div class="fld"><label for="f-${p}">${lbl}</label><textarea id="f-${p}" placeholder="${esc(ph || '')}" oninput="cfgIn('${p}',this.value)">${esc(gp(p))}</textarea>${hlp ? `<small>${hlp}</small>` : ''}</div>`;
+function subirFoto(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  if (!/^image\//.test(f.type)) return toast('Elige un archivo de imagen (PNG o JPG)', true);
+  if (f.size > 12 * 1024 * 1024) return toast('La imagen pesa más de 12 MB', true);
+  const rd = new FileReader();
+  rd.onload = () => { const im = new Image();
+    im.onload = () => { const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      conf.sitio.foto = c.toDataURL('image/jpeg', 0.8); drawCfg(); };
+    im.onerror = () => toast('No se pudo leer la imagen', true); im.src = rd.result; };
+  rd.readAsDataURL(f);
+}
+function quitarFoto() { conf.sitio.foto = ''; drawCfg(); }
 const cl = (lbl, p) => `<div class="clr"><input type="color" value="${esc(gp(p))}" aria-label="${lbl}" oninput="cfgIn('${p}',this.value);this.nextElementSibling.lastElementChild.textContent=this.value"><div><b>${lbl}</b><span>${esc(gp(p))}</span></div></div>`;
 const seg = (p, o) => `<div class="segc" style="grid-template-columns:repeat(${o.length},1fr)">${o.map(([v, l]) => `<button class="${gp(p) === v ? 'on' : ''}" onclick="cfgSet('${p}',${v})">${l}</button>`).join('')}</div>`;
 const PLAT = {
@@ -829,51 +836,27 @@ function modRow(k) {
       <div class="fld"><label for="f-${P}.precio">Precio</label><div class="money">${sym()}<input id="f-${P}.precio" type="text" inputmode="numeric" autocomplete="off" value="${fmt(m.precio)}" placeholder="25.000" oninput="precioIn('${P}.precio',this)">${mon()}</div></div></div>` : ''}</div>`;
 }
 const medal = r => ['🥇', '🥈', '🥉'][r] || '🏅';
-const prevHero = () => { const s = conf.sitio; return `<span class="cap">Vista previa</span><span class="pchip" style="background:${s.color};color:${s.texto}">${esc(s.etiqueta) || '…'}</span><div class="ph1">${esc(s.nombre) || '…'}</div><div class="ph2">${esc(s.subtitulo)}</div>`; };
-const prevPremios = () => { const s = conf.sitio, seen = {};
-  return `<span class="cap">Vista previa en el sitio</span><div class="pt1">${esc(s.premiosTitulo)}</div><div class="ph2">${esc(s.premiosSub)}</div><div class="pcs">${s.premios.map(p => { const r = seen[p.mod] = (seen[p.mod] === undefined ? 0 : seen[p.mod] + 1);
-    return `<div class="pc" style="--bc:${s.color}"><div class="pm">${medal(r)}</div><div class="pn">${esc(p.puesto)}</div><div class="pv2">${esc(p.valor) || '—'}</div><small>Boletos ${esc(p.mod)}</small></div>`; }).join('') || '<div class="ph2">Aún no hay premios.</div>'}</div>`; };
-function prevUpd() { if ($('prev-h')) $('prev-h').innerHTML = prevHero(); if ($('prev-p')) $('prev-p').innerHTML = prevPremios(); }
-function premAdd() {
-  const s = conf.sitio; if (s.premios.length >= 10) return toast('Máximo 10 premios', true);
-  const mod = modsActivas()[0] || 'x1', n = s.premios.filter(p => p.mod === mod).length + 1;
-  s.premios.push({ puesto: n + '.º Lugar' + (n === 1 ? ' (Gran Premio)' : ''), valor: '', mod }); drawCfg();
-}
-function premDel(i) { conf.sitio.premios.splice(i, 1); drawCfg(); }
-function premRow(p, i, r) {
-  const P = 'sitio.premios.' + i, mods = Object.keys(conf.nums.mods).filter(k => conf.nums.mods[k].on || k === p.mod);
-  return `<div class="prow"><div class="pmed">${medal(r)}</div>${fl('Puesto', P + '.puesto', '1.º Lugar')}${fl('Valor del premio', P + '.valor', '$500.000 COP')}
-    <div class="fld"><label for="pm${i}">Modalidad</label><select id="pm${i}" onchange="cfgSet('${P}.mod',this.value)">${mods.map(k => `<option value="${k}" ${k === p.mod ? 'selected' : ''}>Boletos ${k}</option>`).join('')}</select></div>
-    <button class="ic del" onclick="premDel(${i})" aria-label="Eliminar premio" title="Eliminar">${ic('trash', 16)}</button></div>`;
-}
+const prevHero = () => { const s = conf.sitio; return `<span class="cap">Vista previa</span><span class="pchip" style="background:${s.color};color:${s.texto}">${esc(s.campana) || 'Campaña'}</span><div class="ph1">${esc(s.nombre) || '…'}</div><div class="ph2">${esc(s.subtitulo)}</div>`; };
+function prevUpd() { if ($('prev-h')) $('prev-h').innerHTML = prevHero(); }
 function drawCfg() {
-  const tabs = [['web', 'Sitio Web'], ['pago', 'Métodos de Pago'], ['num', 'Sistema de Números'], ['mail', 'Avisos de Registro']];
+  const tabs = [['web', 'Sitio Web'], ['pago', 'Métodos de Pago'], ['mail', 'Avisos de Registro']];
   const B = {
-    web: `<section class="cc" style="grid-column:1/-1">${hd('globe', 'Textos de la Portada (Hero)', 'Lo primero que ve el cliente al entrar al sitio.')}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Título principal', 'sitio.nombre', 'Donaciones')}${fl('Texto de la etiqueta superior', 'sitio.etiqueta', '💚 TU AYUDA CUENTA')}
-          ${fl('Subtítulo / Frase de impacto', 'sitio.subtitulo', '¡Elige tu número y gana hasta $1.000.000 COP!')}
-          <div class="fld"><label for="f-mon">Moneda de las donaciones</label><input id="f-mon" type="text" value="COP — Peso colombiano" readonly><small>Los precios se muestran con punto de miles, ej. $25.000 COP.</small></div></div>
+    web: `<section class="cc" style="grid-column:1/-1">${hd('globe', 'Textos de la Portada', 'Lo primero que ve la persona al entrar a la página de donación.')}
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Título principal', 'sitio.nombre', 'Hacer una donación')}${fl('Subtítulo / frase de impacto', 'sitio.subtitulo', 'Completa el formulario para que tu aporte llegue a quien lo necesita')}</div>
         <div class="prev" id="prev-h">${prevHero()}</div></section>` +
-      `<section class="cc" style="grid-column:1/-1">${hd('layers', 'Configuración de Premios (¿Qué puedes ganar?)', 'Agrega los ganadores que quieras y asócialos a una modalidad de boleto.')}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Título de la sección pública', 'sitio.premiosTitulo', '¿Qué puedes ganar?')}${fl('Subtítulo de la sección', 'sitio.premiosSub', 'Premios principales para los ganadores')}</div>
-        <div class="prem">${(() => { const seen = {}; return conf.sitio.premios.map((p, i) => { const r = seen[p.mod] = (seen[p.mod] === undefined ? 0 : seen[p.mod] + 1); return premRow(p, i, r); }).join(''); })()}</div>
-        <div><button class="bgh" onclick="premAdd()">${ic('plus', 16)}Agregar nuevo puesto / premio</button></div>
-        <div class="prev" id="prev-p">${prevPremios()}</div></section>` +
+      `<section class="cc" style="grid-column:1/-1">${hd('layers', 'Información de la campaña', 'Explica quién necesita ayuda, la situación y en qué se usará el dinero.')}
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${fl('Nombre del beneficiario', 'sitio.beneficiario', 'Ej. Familia Gómez')}${fl('Título de la campaña', 'sitio.campana', 'Ej. Ayuda para la operación de Sofía')}</div>
+        ${ta('Descripción: quién necesita ayuda y por qué es importante', 'sitio.desc1', 'Describe la situación de forma clara y honesta.')}
+        ${ta('Uso del dinero y soportes', 'sitio.desc2', 'Explica en qué se usará lo recaudado y qué soportes verificables existen.')}</section>` +
+      card('upload', 'Foto de la campaña', 'Imagen que se muestra junto a la información. Se ajusta sola para que cargue rápido.', `<div class="drop">${conf.sitio.foto ? `<img class="qr" style="width:160px;height:110px;object-fit:cover" src="${esc(conf.sitio.foto)}" alt="Foto de la campaña" ${zoomQR}>` : `<div class="qr qr0" style="width:160px;height:110px">${ic('upload', 36)}</div>`}<div style="display:flex;flex-direction:column;gap:8px"><label class="btn2">${ic('upload', 16)}${conf.sitio.foto ? 'Reemplazar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this)"></label>${conf.sitio.foto ? '<button class="bgh del" onclick="quitarFoto()">Quitar</button>' : '<div class="hint">PNG o JPG</div>'}</div></div>`) +
       card('set', 'Color de Marca / Tema', 'Selecciona el color principal para tu sitio web público. Las letras cambian solas a blanco o negro según el contraste.', `<div class="pal">${PAL.map(([n, h]) => { const on = conf.sitio.color.toUpperCase() === h; return `<div class="pi${on ? ' on' : ''}"><button style="--c:${h};color:${txtOn(h)}" class="${on ? 'on' : ''}" onclick="setColor('${h}')" aria-label="${n}" aria-pressed="${on}">${on ? ic('check', 20) : ''}</button><small>${n}</small></div>`; }).join('')}</div>
-        <div class="pv"><button style="background:${conf.sitio.color};color:${conf.sitio.texto}">Comprar boleto</button><span class="hint">Texto del botón: <b style="color:var(--text)">${conf.sitio.texto === '#000000' ? 'Negro' : 'Blanco'}</b> (automático)</span></div>`) +
-      card('chat', 'WhatsApp de Contacto', 'Número donde los clientes escriben para soporte o dudas.', fl('Número de celular', 'sitio.whatsapp', '+57 300 123 4567', 'Incluye el código de país.', 'tel')) +
+        <div class="pv"><button style="background:${conf.sitio.color};color:${conf.sitio.texto}">Donar</button><span class="hint">Texto del botón: <b style="color:var(--text)">${conf.sitio.texto === '#000000' ? 'Negro' : 'Blanco'}</b> (automático)</span></div>`) +
       card('globe', 'Idiomas del Sitio', 'El sitio está en español, inglés y portugués (Brasil). Los textos que dejes con el valor por defecto se traducen solos; los que tú escribas se muestran tal cual.',
         `<div class="swr"><button class="sw ${conf.sitio.idioma.auto ? 'on' : ''}" role="switch" aria-checked="${conf.sitio.idioma.auto}" aria-label="Detectar idioma" onclick="cfgSet('sitio.idioma.auto',${!conf.sitio.idioma.auto})"></button>Detectar el idioma del navegador de cada visitante</div>
          <div class="swr"><button class="sw ${conf.sitio.idioma.sel ? 'on' : ''}" role="switch" aria-checked="${conf.sitio.idioma.sel}" aria-label="Mostrar selector" onclick="cfgSet('sitio.idioma.sel',${!conf.sitio.idioma.sel})"></button>Mostrar el selector de idioma en el sitio</div>
          <div class="fld"><label for="f-idm">Idioma por defecto</label><select id="f-idm" onchange="cfgSet('sitio.idioma.def',this.value)">${[['es', 'Español'], ['en', 'English'], ['pt', 'Português (Brasil)']].map(([v, l]) => `<option value="${v}" ${conf.sitio.idioma.def === v ? 'selected' : ''}>${l}</option>`).join('')}</select><small>Se usa cuando el idioma del visitante no es uno de estos tres, o si apagas la detección.</small></div>
          <div class="ej"><b>Correos al cliente:</b> si dejas el asunto y el mensaje de confirmación con el texto original, cada cliente lo recibe en el idioma en que usó el sitio. Si los personalizas, se envían tal como los escribas.</div>`),
     pago: drawPagos(),
-    num: `<section class="cc" style="grid-column:1/-1">${hd('layers', 'Configurar Modalidades de Boletos', 'Activa las que quieras. Cada una tiene su propio rango de números y su precio.')}<div class="mods">${['x1', 'x2', 'x3', 'x4', 'x5'].map(modRow).join('')}</div></section>` +
-      `<section class="cc" style="grid-column:1/-1">${hd('grid', 'Apariencia de Grilla y Tiempos', 'Cómo se ve la tableta de números y cuánto dura una reserva.')}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">${fl('Columnas de la grilla', 'nums.cols', '10', 'Entre 3 y 20.', 'number')}
-          <div class="fld"><label>Tiempo límite de reserva</label>${seg('nums.reserva', [[12, '12 horas'], [24, '24 horas'], [48, '48 horas']])}<small>Pasado este tiempo, los números sin pago vuelven a estar disponibles.</small></div></div>
-        <div class="g2">${cl('Disponible', 'nums.cDisp')}${cl('Reservado', 'nums.cRes')}${cl('Vendido', 'nums.cVen')}</div></section>`,
-
     mail: card('mail', 'Alertas para el Administrador', 'Recibe un aviso a tu correo cada vez que un usuario registre un boleto o suba un comprobante.',
         fl('Tu correo electrónico (Gmail / Hotmail)', 'mail.admin', 'tucorreo@gmail.com', null, 'email') +
         `<div class="swr"><button class="sw ${conf.mail.alertas ? 'on' : ''}" role="switch" aria-checked="${conf.mail.alertas}" aria-label="Activar alertas" onclick="cfgSet('mail.alertas',${!conf.mail.alertas})"></button>Activar alertas por correo cuando haya un nuevo registro</div>
