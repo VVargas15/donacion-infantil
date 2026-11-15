@@ -133,7 +133,7 @@ $('go').onclick=async()=>{
   if(amt<MIN){ok(false);return}
   const g=$('go');g.disabled=true;g.textContent=t.sending;
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'register',nombre,correo}).toString()});
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'register',nombre,correo,monto:String(amt)}).toString()});
     sent=true;say(fmtT(t.thanks,{n:nombre.split(' ')[0],a:f(amt),e:correo}));
     $('nm').value='';$('em').value='';renderBtn();paintPay();
   }catch(e){say(t.net,true);g.disabled=false;renderBtn()}
