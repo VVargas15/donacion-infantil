@@ -748,6 +748,24 @@ function guardarCfg() {
   catch (e) { return toast('No se pudo guardar en este navegador', true); }
   confSaved = JSON.parse(JSON.stringify(conf)); drawCfg(); publicar('Configuración guardada');
 }
+async function verificarSitio() {
+  const el = $('conn-s'); if (!el) return; el.textContent = 'Consultando el sitio…';
+  try {
+    const j = await (await fetch(SCRIPT_URL + '?action=publicconfig&t=' + Date.now(), { redirect: 'follow', cache: 'no-store' })).json();
+    if (!j.ok || !j.data) { el.textContent = '❌ El servidor respondió: ' + (j.error || 'sin datos') + '\nEn Apps Script: Implementar > Administrar implementaciones > lápiz > Nueva versión.'; return; }
+    const s = j.data.sitio || {}, m = (j.data.pago && j.data.pago.metodos) || [], L = [];
+    L.push((m.length ? '✅' : '⚠️') + ' Métodos de pago en el sitio: ' + m.length + ' (en este panel: ' + conf.pago.metodos.length + ')');
+    L.push((s.foto ? '✅' : '⚠️') + ' Foto de la campaña: ' + (s.foto ? 'sí' : 'no llegó'));
+    L.push((s.campana || s.beneficiario ? '✅' : '⚠️') + ' Beneficiario / campaña: ' + (s.beneficiario || '—') + ' / ' + (s.campana || '—'));
+    L.push((s.color ? '✅' : '⚠️') + ' Color: ' + (s.color || 'no llegó'));
+    if (m.length !== conf.pago.metodos.length || !s.foto !== !conf.sitio.foto) L.push('→ Hay diferencias: pulsa “Publicar ahora”.');
+    el.textContent = L.join('\n');
+  } catch (e) { el.textContent = '❌ Sin respuesta del servidor. Revisa que la implementación sea “Cualquier persona” y una Nueva versión.'; }
+}
+function publicarAhora() {
+  try { localStorage.setItem('rifa_cfg', JSON.stringify(conf)); } catch (e) {}
+  confSaved = JSON.parse(JSON.stringify(conf)); drawCfg(); publicar('Configuración');
+}
 function descartarCfg() { conf = JSON.parse(JSON.stringify(confSaved)); drawNav(); drawCfg(); }
 const hd = (icn, t, d) => `<div class="cch"><i>${ic(icn, 20)}</i><div><b>${t}</b><small>${d}</small></div></div>`;
 const card = (icn, t, d, inner) => `<section class="cc">${hd(icn, t, d)}${inner}</section>`;
@@ -881,6 +899,7 @@ function drawCfg() {
   };
   $('cfgv').innerHTML = `<div class="ctabs">${tabs.map(([k, l]) => `<button class="${ctab === k ? 'on' : ''}" onclick="setTab('${k}')">${l}</button>`).join('')}</div>
     <div class="${ctab === 'pago' ? 'pg' : 'cgrid'}">${B[ctab]}</div>
+    <div style="margin-top:16px">${card('globe', 'Conexión con el sitio', 'Comprueba que lo que guardas aquí llega a la página pública (textos, foto, color y métodos de pago).', `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bgh" onclick="publicarAhora()">Publicar ahora</button><button class="bgh" onclick="verificarSitio()">Verificar sitio</button></div><div class="ej" id="conn-s" style="margin-top:10px;white-space:pre-line">Pulsa “Verificar sitio” para ver qué está recibiendo la página pública.</div>`)}</div>
     ${ctab === 'pago' ? '' : `<div class="sbar"><span class="st2" id="sb-s"></span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bgh" id="sb-d" onclick="descartarCfg()">Descartar</button><button class="bsave" id="sb-g" onclick="guardarCfg()">${ic('save', 18)}${ctab === 'mail' ? 'Guardar ajustes de avisos' : ctab === 'web' ? 'Guardar cambios en el Sitio Web' : 'Guardar cambios'}</button></div></div>`}`;
   confBar();
 }

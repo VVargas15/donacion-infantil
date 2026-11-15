@@ -99,9 +99,9 @@ h1{font-size:30px;font-weight:800;color:#0f2540;text-align:center}
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwhKDodOrO2icgEW8BrqfkVPi8-LQhxAiaZ7RLXVzBsyBQcNN7e48cuM8MyYcTFpiBV5A/exec';
 const MIN=20,f=n=>n.toLocaleString('es-CO'),$=id=>document.getElementById(id);
 const T={
-es:{title:'Hacer una donación',sub:'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.',how:'¿Cuánto quieres donar? (USD)',other:'Ingresar otro monto',otherPh:'Otro monto',name:'Nombre completo',mail:'Correo electrónico',btn:'Donar $%s USD →',note:'🔒 Pago seguro. Revisa los datos del titular antes de transferir.',support:'Apoyo a',camp:'Campaña:',errAmt:'⚠️ El monto debe ser de $20 o más.',missing:'Por favor completa tu nombre y correo.',badMail:'El correo no es válido.',sending:'Enviando…',done:'Donación registrada ✓',net:'No se pudo enviar. Revisa tu conexión e intenta de nuevo.',thanks:'¡Gracias, %n! Registramos tu donación de $%a USD. Te escribiremos a %e para confirmarla.',back:'← Volver',payA:'Método de ',payB:'pago',paySub:'Donación de <b>$%a USD</b>. Elige cómo pagar:',copy:'Copiar',copied:'¡Copiado!',holder:'Titular:',warn1:'Envía exactamente el monto indicado. Después de transferir, escríbenos',warnTo:' a ',warn2:' con tu comprobante.',transferred:'Ya transferí →'},
-en:{title:'Make a donation',sub:'Fill in the form so your contribution goes directly to support their recovery.',how:'How much would you like to donate? (USD)',other:'Enter another amount',otherPh:'Other amount',name:'Full name',mail:'Email address',btn:'Donate $%s USD →',note:'🔒 Secure payment. Check the account holder details before transferring.',support:'Support for',camp:'Campaign:',errAmt:'⚠️ The amount must be $20 or more.',missing:'Please enter your name and email.',badMail:'The email is not valid.',sending:'Sending…',done:'Donation registered ✓',net:'Could not send. Check your connection and try again.',thanks:'Thank you, %n! We registered your donation of $%a USD. We will email %e to confirm it.',back:'← Back',payA:'Payment ',payB:'method',paySub:'Donation of <b>$%a USD</b>. Choose how to pay:',copy:'Copy',copied:'Copied!',holder:'Holder:',warn1:'Send exactly the amount shown. After transferring, write to us',warnTo:' at ',warn2:' with your receipt.',transferred:'I have transferred →'},
-pt:{title:'Fazer uma doação',sub:'Preencha o formulário para que sua contribuição ajude diretamente na recuperação.',how:'Quanto você quer doar? (USD)',other:'Informar outro valor',otherPh:'Outro valor',name:'Nome completo',mail:'E-mail',btn:'Doar $%s USD →',note:'🔒 Pagamento seguro. Confira os dados do titular antes de transferir.',support:'Apoio a',camp:'Campanha:',errAmt:'⚠️ O valor deve ser de $20 ou mais.',missing:'Por favor, preencha seu nome e e-mail.',badMail:'O e-mail não é válido.',sending:'Enviando…',done:'Doação registrada ✓',net:'Não foi possível enviar. Verifique sua conexão e tente de novo.',thanks:'Obrigado, %n! Registramos sua doação de $%a USD. Enviaremos um e-mail para %e para confirmar.',back:'← Voltar',payA:'Método de ',payB:'pagamento',paySub:'Doação de <b>$%a USD</b>. Escolha como pagar:',copy:'Copiar',copied:'Copiado!',holder:'Titular:',warn1:'Envie exatamente o valor indicado. Depois de transferir, escreva para nós',warnTo:' em ',warn2:' com o comprovante.',transferred:'Já transferi →'}
+es:{title:'Hacer una donación',sub:'Completa el formulario para que tu aporte llegue directamente a impulsar su recuperación.',how:'¿Cuánto quieres donar? (USD)',other:'Ingresar otro monto',otherPh:'Otro monto',name:'Nombre completo',mail:'Correo electrónico',btn:'Donar $%s USD →',note:'🔒 Pago seguro. Revisa los datos del titular antes de transferir.',support:'Apoyo a',camp:'Campaña:',errAmt:'⚠️ El monto debe ser de $20 o más.',missing:'Por favor completa tu nombre y correo.',badMail:'El correo no es válido.',sending:'Enviando…',done:'Donación registrada ✓',net:'No se pudo enviar. Revisa tu conexión e intenta de nuevo.',thanks:'¡Gracias, %n! Registramos tu donación de $%a USD. Te escribiremos a %e para confirmarla.',back:'← Volver',payA:'Método de ',payB:'pago',paySub:'Donación de <b>$%a USD</b>. Elige cómo pagar:',copy:'Copiar',copied:'¡Copiado!',holder:'Titular:',warn1:'Envía exactamente el monto indicado. Después de transferir, escríbenos',warnTo:' a ',warn2:' con tu comprobante.',transferred:'Ya transferí →',noPay:'Aún no hay métodos de pago disponibles. Intenta de nuevo en unos minutos o contacta al organizador.'},
+en:{title:'Make a donation',sub:'Fill in the form so your contribution goes directly to support their recovery.',how:'How much would you like to donate? (USD)',other:'Enter another amount',otherPh:'Other amount',name:'Full name',mail:'Email address',btn:'Donate $%s USD →',note:'🔒 Secure payment. Check the account holder details before transferring.',support:'Support for',camp:'Campaign:',errAmt:'⚠️ The amount must be $20 or more.',missing:'Please enter your name and email.',badMail:'The email is not valid.',sending:'Sending…',done:'Donation registered ✓',net:'Could not send. Check your connection and try again.',thanks:'Thank you, %n! We registered your donation of $%a USD. We will email %e to confirm it.',back:'← Back',payA:'Payment ',payB:'method',paySub:'Donation of <b>$%a USD</b>. Choose how to pay:',copy:'Copy',copied:'Copied!',holder:'Holder:',warn1:'Send exactly the amount shown. After transferring, write to us',warnTo:' at ',warn2:' with your receipt.',transferred:'I have transferred →',noPay:'No payment methods are available yet. Please try again in a few minutes or contact the organizer.'},
+pt:{title:'Fazer uma doação',sub:'Preencha o formulário para que sua contribuição ajude diretamente na recuperação.',how:'Quanto você quer doar? (USD)',other:'Informar outro valor',otherPh:'Outro valor',name:'Nome completo',mail:'E-mail',btn:'Doar $%s USD →',note:'🔒 Pagamento seguro. Confira os dados do titular antes de transferir.',support:'Apoio a',camp:'Campanha:',errAmt:'⚠️ O valor deve ser de $20 ou mais.',missing:'Por favor, preencha seu nome e e-mail.',badMail:'O e-mail não é válido.',sending:'Enviando…',done:'Doação registrada ✓',net:'Não foi possível enviar. Verifique sua conexão e tente de novo.',thanks:'Obrigado, %n! Registramos sua doação de $%a USD. Enviaremos um e-mail para %e para confirmar.',back:'← Voltar',payA:'Método de ',payB:'pagamento',paySub:'Doação de <b>$%a USD</b>. Escolha como pagar:',copy:'Copiar',copied:'Copiado!',holder:'Titular:',warn1:'Envie exatamente o valor indicado. Depois de transferir, escreva para nós',warnTo:' em ',warn2:' com o comprovante.',transferred:'Já transferi →',noPay:'Ainda não há métodos de pagamento disponíveis. Tente novamente em alguns minutos ou fale com o organizador.'}
 };
 const PLAT={paypal:'PayPal',btc:'BTC',nequi:'Nequi',nu:'Nu / Bre-B',breb:'Bre-B',binance:'Binance Pay',bancolombia:'Bancolombia',daviplata:'Daviplata',usdt:'Billetera USDT'};
 let CFG={sitio:{},pago:{metodos:[]}},L='es',amt=20,sent=false;
@@ -130,7 +130,7 @@ function paint(){
   if(step===2)drawPay();
 }
 function renderBtn(){const g=$('go');if(sent){g.textContent=T[L].done;g.disabled=true;return}g.textContent=fmtT(T[L].btn,{s:f(amt)});g.disabled=amt<MIN;g.style.opacity=amt<MIN?'.6':''}
-let step=1,sel=0,donor={};
+let step=1,sel=0,donor={},cfgP=Promise.resolve();
 const GL={paypal:['P','#0070BA'],binance:['B','#F0B90B'],btc:['₿','#F7931A'],usdt:['T','#26A17B'],nequi:['N','#C026D3'],nu:['N','#820AD1'],breb:['B','#0EA5E9'],bancolombia:['B','#FDDA24'],daviplata:['D','#E11D48']};
 const methods=()=>((CFG.pago&&CFG.pago.metodos)||[]).filter(x=>x&&(x.dato||x.titular));
 function badge(tipo,sz){const g=GL[tipo]||[String(PLAT[tipo]||'?')[0],'#6b7280'],e=document.createElement('span');e.className='ic';e.style.cssText='background:'+g[1]+';width:'+sz+'px;height:'+sz+'px;font-size:'+Math.round(sz*.5)+'px;color:'+(tipo==='bancolombia'?'#111':'#fff');e.textContent=g[0];return e}
@@ -142,7 +142,10 @@ function drawPay(){
   $('pS').innerHTML=fmtT(t.paySub,{a:f(amt)});
   const box=$('chips');box.textContent='';
   m.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.className='chip'+(i===sel?' on':'');b.append(badge(x.tipo,22),document.createTextNode(PLAT[x.tipo]||x.tipo||''));b.onclick=()=>{sel=i;drawPay()};box.append(b)});
-  const x=m[sel],pb=$('pbox');pb.textContent='';if(!x)return;
+  const x=m[sel],pb=$('pbox');pb.textContent='';
+  $('done').style.display=m.length?'':'none';$('warn').style.display=m.length?'':'none';
+  if(!x){const n=document.createElement('div');n.className='warn';n.style.cssText='margin:0;background:#fef2f2;border-color:#fecaca;color:#991b1b';n.textContent='⚠️ '+t.noPay;pb.style.cssText='border:0;background:none;padding:0';pb.append(n);return}
+  pb.style.cssText='';
   const ph=document.createElement('div');ph.className='ph';const nm=document.createElement('span');nm.textContent=PLAT[x.tipo]||x.tipo||'';ph.append(badge(x.tipo,32),nm);
   const pd=document.createElement('div');pd.className='pd';
   if(x.dato&&x.titular){const h=document.createElement('div');h.className='hold';h.textContent=t.holder+' '+x.titular;pd.append(h)}
@@ -172,13 +175,14 @@ function pickLang(){
   return def;
 }
 // paso 1 -> paso 2 (método de pago) -> registrar al confirmar "Ya transferí"
-$('go').onclick=()=>{
+$('go').onclick=async()=>{
   const nombre=$('nm').value.trim(),correo=$('em').value.trim(),t=T[L];
   if(!nombre||!correo){say(t.missing,true);return}
   if(!/^\S+@\S+\.\S+$/.test(correo)){say(t.badMail,true);return}
   if(amt<MIN){ok(false);return}
   donor={nombre,correo,monto:amt};$('msg').style.display='none';
-  if(methods().length)showStep(2);else finish();
+  const g=$('go');g.disabled=true;try{await cfgP}catch(e){}g.disabled=false;renderBtn();
+  showStep(2);
 };
 $('back').onclick=()=>showStep(1);
 $('back').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')showStep(1)};
@@ -209,7 +213,7 @@ function norm(d){
 function showDbg(j){const p=document.createElement('pre');p.style.cssText='position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;background:#000;color:#0f0;font:11px monospace;padding:8px;z-index:9;white-space:pre-wrap';p.textContent=JSON.stringify(j,(k,v)=>typeof v==='string'&&v.length>80?v.slice(0,80)+'…':v,2);document.body.append(p)}
 // arranque: pinta con valores por defecto y luego aplica la configuración del admin
 L=pickLang();paint();
-fetch(SCRIPT_URL+'?action=publicconfig',{redirect:'follow',cache:'no-store'}).then(r=>r.json()).then(j=>{
+cfgP=fetch(SCRIPT_URL+'?action=publicconfig',{redirect:'follow',cache:'no-store'}).then(r=>r.json()).then(j=>{
   if(j&&j.ok&&j.data){CFG=norm(j.data);if(/[?&]debug/.test(location.search))showDbg(j.data);applyColor();L=pickLang();paint()}else if(/[?&]debug/.test(location.search))showDbg(j)
 }).catch(e=>{if(/[?&]debug/.test(location.search))showDbg({error:String(e),aviso:'El servidor no devolvió JSON: revisa que la implementación sea Cualquier persona y Nueva versión'})});
 </script></body></html>
