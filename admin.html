@@ -232,19 +232,43 @@ function vDel() {
 }
 
 // ---------- Configuración ----------
-const DEF = { maxDonors: 100000, accent: '#2d7a4a', heroImage: '', heroX: 50, heroY: 50, heroZoom: 100, amounts: '5,10,15,20', minAmount: 5, formTitle: 'Hacer una *donación*', amountLabel: '¿Cuánto querés donar?', customLink: 'Ingresar otro monto', btnText: '💚 Continuar al pago →', trustText: '🔒 Pago seguro · 100% va a los niños', contactEmail: 'donaciones@ong.org', transferBtn: 'Ya transferí →', pageTitle: 'Cambia la vida de los niños', heroTitle: 'Cada *donación* cambia una vida.', heroSub: 'Tu aporte llega directo a niños en comunidades vulnerables de América Latina.', campBeneficiary: '', campTitle: '', campWho: '', campUse: '', formSub: '', emailSubject: '', emailBody: '' };
+const DEF = { maxDonors: 100000, accent: '#2d7a4a', heroImage: '', heroX: 50, heroY: 50, heroZoom: 100, extraMethods: [], amounts: '5,10,15,20', minAmount: 5, formTitle: 'Hacer una *donación*', amountLabel: '¿Cuánto querés donar?', customLink: 'Ingresar otro monto', btnText: '💚 Continuar al pago →', trustText: '🔒 Pago seguro · 100% va a los niños', contactEmail: 'donaciones@ong.org', transferBtn: 'Ya transferí →', pageTitle: 'Cambia la vida de los niños', heroTitle: 'Cada *donación* cambia una vida.', heroSub: 'Tu aporte llega directo a niños en comunidades vulnerables de América Latina.', campBeneficiary: '', campTitle: '', campWho: '', campUse: '', formSub: '', emailSubject: '', emailBody: '' };
 const TABS = [['apariencia', 'Apariencia'], ['textos', 'Textos de la página'], ['formulario', 'Formulario y montos'], ['cupo', 'Cupo de donantes'], ['metodos', 'Métodos de pago'], ['correo', 'Correo de confirmación'], ['clave', 'Cambiar clave de acceso']];
 const SW = ['#2d7a4a', '#1d6fb8', '#7c3aed', '#be185d', '#c2410c', '#0f766e'];
 let draft = null, ctab = 'apariencia';
 const hv = (v, d) => isNaN(parseFloat(v)) ? d : parseFloat(v);
 function hpos() { const b = $('hbg'); if (!b) return; const x = hv(draft.heroX, 50), y = hv(draft.heroY, 50), z = hv(draft.heroZoom, 100) / 100; b.style.backgroundPosition = x + '% ' + y + '%'; b.style.transformOrigin = x + '% ' + y + '%'; b.style.transform = 'scale(' + z + ')'; }
 const fld = (k, label, ph, rows, hint) => `<div class="f"><label for="d-${k}">${label}</label>${rows ? `<textarea id="d-${k}" data-k="${k}" placeholder="${esc(ph)}" style="min-height:${rows}px">${esc(draft[k])}</textarea>` : `<input id="d-${k}" data-k="${k}" placeholder="${esc(ph)}" value="${esc(draft[k])}">`}${hint ? `<small>${hint}</small>` : ''}</div>`;
+
+const CATALOG = [
+  { name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', color: '#627eea', type: 'crypto', label: 'Dirección ETH' },
+  { name: 'USDC', symbol: 'USDC', icon: '$', color: '#2775ca', type: 'crypto', label: 'Dirección USDC' },
+  { name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#345d9d', type: 'crypto', label: 'Dirección LTC' },
+  { name: 'Solana', symbol: 'SOL', icon: '◎', color: '#9945ff', type: 'crypto', label: 'Dirección SOL' },
+  { name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', type: 'crypto', label: 'Dirección BNB' },
+  { name: 'Zelle', symbol: 'Zelle', icon: 'Z', color: '#6d1ed4', type: 'text', label: 'Correo o teléfono de Zelle' },
+  { name: 'Nequi', symbol: 'Nequi', icon: 'N', color: '#da0081', type: 'text', label: 'Número de Nequi' },
+  { name: 'Daviplata', symbol: 'Daviplata', icon: 'D', color: '#ed1c24', type: 'text', label: 'Número de Daviplata' },
+  { name: 'Mercado Pago', symbol: 'Mercado Pago', icon: 'M', color: '#00b1ea', type: 'text', label: 'Alias o CVU' },
+  { name: 'Transferencia bancaria', symbol: 'Transferencia', icon: '🏦', color: '#374151', type: 'text', label: 'Datos de la cuenta (banco, titular, número)' },
+  { name: 'Otro método', symbol: 'Otro', icon: '＋', color: '#0f766e', type: 'text', label: 'Datos para pagar' }
+];
+const extraHtml = () => (draft.extraMethods || []).map((x, i) => {
+  const on = x.on !== false, crypto = x.type === 'crypto';
+  return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${esc(x.name || 'Método')}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div>
+  <div style="display:flex;align-items:center;gap:12px"><button class="btn ghost" data-a="delm" data-id="${i}" style="padding:6px 12px">Quitar</button><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-x="${i}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div></div>
+  <div class="f" style="margin-bottom:8px"><label>Nombre</label><input class="val" data-x="${i}" data-f="name" value="${esc(x.name)}"></div>
+  <div class="f" style="margin-bottom:8px"><label>Texto del botón (podés poner la red, ej: USDC (ERC20))</label><input class="val" data-x="${i}" data-f="symbol" value="${esc(x.symbol)}"></div>
+  <div class="f" style="margin-bottom:6px"><label>${esc(x.label || 'Datos')}</label>${crypto ? `<input class="val" data-x="${i}" data-f="addr" value="${esc(x.addr)}" placeholder="Pegá aquí la dirección">` : `<textarea class="val" data-x="${i}" data-f="addr" style="min-height:70px" placeholder="Escribí los datos que debe ver el donante">${esc(x.addr)}</textarea>`}</div>
+  ${crypto ? `<div class="row" style="align-items:center;gap:12px;margin:4px 0 0">${x.qr ? `<img src="${esc(x.qr)}" alt="QR" style="width:72px;height:72px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff">` : '<div style="width:72px;height:72px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--mute);padding:4px">QR automático</div>'}<label class="btn ghost" style="cursor:pointer">${x.qr ? 'Cambiar QR' : 'Subir QR propio'}<input type="file" accept="image/*" hidden data-qrx="${i}"></label>${x.qr ? `<button class="btn ghost" data-a="noqrx" data-id="${i}">Usar QR automático</button>` : ''}</div>` : ''}</div>`;
+}).join('');
+const addPicker = () => `<div class="sec" style="margin-top:20px"><h3>Agregar otro método</h3><div class="row"><select id="addm" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff">${CATALOG.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select><button class="btn" data-a="addm" type="button">Agregar</button></div><small style="color:var(--mute)">Elegí uno de la lista y completá sus datos. Podés agregar los que quieras y quitarlos cuando quieras.</small></div>`;
 const qrBox = (x, c) => !x.qr ? '' : `<div class="row" style="margin:-4px 0 14px 0;align-items:center;gap:12px">
   ${c.qr ? `<img src="${esc(c.qr)}" alt="QR de ${esc(x.name)}" style="width:72px;height:72px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff">` : '<div style="width:72px;height:72px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--mute);padding:4px">QR original</div>'}
   <label class="btn ghost" style="cursor:pointer">${c.qr ? 'Cambiar QR' : 'Subir QR'}<input type="file" accept="image/*" hidden data-qrfile="${esc(x.name)}"></label>
   ${c.qr ? `<button class="btn ghost" data-a="noqr" data-id="${esc(x.name)}">Usar QR original</button>` : ''}</div>`;
 function vCfg() {
-  if (!draft) draft = { ...DEF, ...cfg, methods: JSON.parse(JSON.stringify(cfg.methods || {})) };
+  if (!draft) draft = { ...DEF, ...cfg, methods: JSON.parse(JSON.stringify(cfg.methods || {})), extraMethods: JSON.parse(JSON.stringify(cfg.extraMethods || [])) };
   const P = {
     apariencia: `<div class="sec"><h3>Foto de portada</h3>${draft.heroImage ? `<img src="${esc(draft.heroImage)}" alt="Foto de portada actual" style="width:100%;max-width:340px;height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--line)">` : '<div class="empty" style="max-width:340px;border:1.5px dashed var(--line);border-radius:12px;padding:30px">Se usa la foto original de la página.</div>'}
       <div class="tools" style="margin-top:12px"><label class="btn ghost" style="cursor:pointer">Subir otra foto<input type="file" id="photo" accept="image/*" hidden></label>${draft.heroImage ? '<button class="btn ghost" data-a="nophoto">Volver a la foto original</button>' : ''}</div><small style="color:var(--mute)">Mejor una foto vertical. Se ajusta sola y tarda unos segundos en subir.</small></div>
@@ -263,7 +287,7 @@ function vCfg() {
       <div class="sec"><h3>Textos del formulario</h3>${fld('formTitle', 'Título del formulario', 'Hacer una *donación*', 0, 'La palabra resaltada va entre asteriscos: *donación*')}${fld('amountLabel', 'Pregunta de los montos', '¿Cuánto querés donar?')}${fld('customLink', 'Texto del enlace "otro monto"', 'Ingresar otro monto')}${fld('btnText', 'Texto del botón principal', '💚 Continuar al pago →')}${fld('trustText', 'Línea de confianza (debajo del botón)', '🔒 Pago seguro · 100% va a los niños')}</div>
       <div class="sec"><h3>Pago y contacto</h3>${fld('contactEmail', 'Correo al que envían el comprobante', 'donaciones@ong.org')}${fld('transferBtn', 'Texto del botón "Ya transferí"', 'Ya transferí →')}${fld('pageTitle', 'Título de la pestaña del navegador', 'Cambia la vida de los niños')}</div>`,
     cupo: `<div class="sec"><h3>Cupo de donantes</h3><div class="f"><label for="d-maxDonors">Máximo de donaciones</label><input id="d-maxDonors" data-k="maxDonors" type="number" min="1" value="${esc(draft.maxDonors)}"><small>Al llegar a este número, el formulario se reemplaza por el mensaje de cierre. Escribilo sin puntos: 100000.</small></div></div>`,
-    metodos: `<div class="sec"><h3>Métodos de pago</h3><p style="margin:0 0 14px;color:var(--mute);font-size:13px">Activá con el interruptor los métodos que querés que vean los donantes.</p>${METHODS.map(x => { const c = draft.methods[x.name] || {}, on = c.on !== false; return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${x.name}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-m="${esc(x.name)}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div><div class="f" style="margin-bottom:6px"><label>${esc(x.label)}</label><input class="val" data-m="${esc(x.name)}" data-f="addr" placeholder="${esc(x.label)}" value="${esc(c.addr || x.addr)}"></div>${qrBox(x, c)}</div>`; }).join('')}<small style="color:var(--mute)">Si cambiás la dirección y no subís un QR nuevo, la página genera el QR sola con la dirección nueva.</small></div>`,
+    metodos: `<div class="sec"><h3>Métodos de pago</h3><p style="margin:0 0 14px;color:var(--mute);font-size:13px">Activá con el interruptor los métodos que querés que vean los donantes.</p>${METHODS.map(x => { const c = draft.methods[x.name] || {}, on = c.on !== false; return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${x.name}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-m="${esc(x.name)}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div><div class="f" style="margin-bottom:6px"><label>${esc(x.label)}</label><input class="val" data-m="${esc(x.name)}" data-f="addr" placeholder="${esc(x.label)}" value="${esc(c.addr || x.addr)}"></div>${qrBox(x, c)}</div>`; }).join('')}${extraHtml()}<small style="color:var(--mute)">Si cambiás la dirección y no subís un QR nuevo, la página genera el QR sola con la dirección nueva.</small></div>${addPicker()}`,
     correo: `<div class="sec"><h3>Correo de confirmación</h3>${fld('emailSubject', 'Asunto', '')}${fld('emailBody', 'Mensaje', '', 170, 'Usá {nombre} y {monto} para insertar los datos del donante. Se envía al verificar una donación.')}</div>`,
     clave: `<div class="sec"><h3>Cambiar clave de acceso</h3><div class="f"><label for="nk">Nueva clave</label><input id="nk" type="password" autocomplete="new-password"><small>Mínimo 8 caracteres. Vas a seguir dentro del panel con la clave nueva.</small></div><button class="btn" data-a="chk">Cambiar clave</button></div>`,
   };
@@ -275,12 +299,13 @@ async function saveCfg() {
   const maxDonors = parseInt(draft.maxDonors, 10);
   if (!maxDonors || maxDonors < 1) return toast('El cupo debe ser un número mayor a 0');
   if (!/^#[0-9a-f]{6}$/i.test(draft.accent)) return toast('Elegí un color válido');
+  for (const x of draft.extraMethods || []) if (x.on !== false && (!String(x.name || '').trim() || !String(x.addr || '').trim())) return toast('Completá los datos del método "' + (x.name || 'sin nombre') + '" o quitalo');
   const minAmount = parseInt(draft.minAmount, 10);
   if (!minAmount || minAmount < 1) return toast('El monto mínimo debe ser un número mayor a 0');
   const am = String(draft.amounts || '').split(',').map(x => parseInt(x.trim(), 10));
   if (am.length < 1 || am.length > 8 || am.some(n => !n || n < 1)) return toast('Los montos deben ser entre 1 y 8 números separados por coma, ej: 5,10,15,20');
   draft.amounts = am.join(',');
-  try { await post({ action: 'saveConfig', config: { ...draft, maxDonors, minAmount } }); await refresh('Cambios guardados'); } catch (e) { toast(e.message); }
+  try { await post({ action: 'saveConfig', config: { ...draft, maxDonors, minAmount, extraMethods: draft.extraMethods } }); await refresh('Cambios guardados'); } catch (e) { toast(e.message); }
 }
 async function changeKey() {
   const nk = $('nk').value; if (nk.length < 8) return toast('La clave debe tener al menos 8 caracteres');
@@ -302,18 +327,24 @@ $('main').addEventListener('input', e => {
   const t = e.target; if (!draft) return;
   if (t.dataset.k) { draft[t.dataset.k] = t.value; if (t.dataset.k === 'accent' && $('prev')) $('prev').style.background = t.value; 
     if (['heroX', 'heroY', 'heroZoom'].includes(t.dataset.k)) hpos(); }
+  else if (t.dataset.x !== undefined) {
+    const m = draft.extraMethods[+t.dataset.x]; if (!m) return;
+    if (t.dataset.f === 'on') { m.on = t.checked; const cd = t.closest('.mcard'); if (cd) { cd.classList.toggle('off', !t.checked); cd.querySelector('.mstate').textContent = t.checked ? 'Visible' : 'Oculto'; } }
+    else { m[t.dataset.f] = t.value; if (t.dataset.f === 'name') { const mn = t.closest('.mcard').querySelector('.mname'); if (mn) mn.textContent = t.value || 'Método'; } }
+  }
   else if (t.dataset.m) { const m = draft.methods[t.dataset.m] = draft.methods[t.dataset.m] || {}; if (t.dataset.f === 'on') { m.on = t.checked; const cd = t.closest('.mcard'); if (cd) { cd.classList.toggle('off', !t.checked); cd.querySelector('.mstate').textContent = t.checked ? 'Visible' : 'Oculto'; } } else m.addr = t.value; }
 });
 $('main').addEventListener('change', async e => {
   const t = e.target, f = t.files && t.files[0]; if (!f || !draft) return;
-  const isQr = !!t.dataset.qrfile;
+  const isQr = !!t.dataset.qrfile || t.dataset.qrx !== undefined;
   if (t.id !== 'photo' && !isQr) return;
   try {
     toast('Subiendo imagen... espera unos segundos', 60000);
     const img = isQr ? await shrink(f, 800, .92) : await shrink(f);
-    const d = await post({ action: 'uploadImage', image: img, name: isQr ? 'qr-' + t.dataset.qrfile.replace(/\W+/g, '') : 'portada' });
+    const d = await post({ action: 'uploadImage', image: img, name: isQr ? 'qr-' + String(t.dataset.qrfile || 'extra' + t.dataset.qrx).replace(/\W+/g, '') : 'portada' });
     if (!/^https:\/\//.test(d.url || '')) throw new Error('El servidor no devolvió el enlace de la imagen');
-    if (isQr) { const m = draft.methods[t.dataset.qrfile] = draft.methods[t.dataset.qrfile] || {}; m.qr = d.url; }
+    if (t.dataset.qrx !== undefined) draft.extraMethods[+t.dataset.qrx].qr = d.url;
+    else if (isQr) { const m = draft.methods[t.dataset.qrfile] = draft.methods[t.dataset.qrfile] || {}; m.qr = d.url; }
     else draft.heroImage = d.url;
     vCfg(); toast('Imagen subida. Tocá Guardar cambios para aplicarla.', 5000);
   } catch (er) { t.value = ''; toast('No se pudo subir: ' + (er instanceof TypeError ? 'sin conexión con el servidor' : er.message), 9000); }
@@ -336,6 +367,9 @@ $('main').addEventListener('click', async e => {
   if (a === 'tab') { ctab = id; return vCfg(); }
   if (a === 'sw') { draft.accent = id; return vCfg(); }
   if (a === 'nophoto') { draft.heroImage = ''; return vCfg(); }
+  if (a === 'addm') { const c = CATALOG[+$('addm').value]; draft.extraMethods.push({ ...c, addr: '', qr: '', on: true }); return vCfg(); }
+  if (a === 'delm') { draft.extraMethods.splice(+id, 1); return vCfg(); }
+  if (a === 'noqrx') { if (draft.extraMethods[+id]) draft.extraMethods[+id].qr = ''; return vCfg(); }
   if (a === 'noqr') { if (draft.methods[id]) delete draft.methods[id].qr; return vCfg(); }
   if (a === 'save') return saveCfg();
   if (a === 'chk') return changeKey();

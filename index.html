@@ -600,6 +600,21 @@
         }
         if (/^https:\/\//.test(c.qr || '')) w.qrImage = c.qr;
       }
+      // Métodos agregados desde el panel
+      const escH = t => String(t).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+      (cf.extraMethods || []).forEach(x => {
+        if (x.on === false || !x.name || !x.addr) return;
+        const name = escH(x.name), symbol = escH(x.symbol || x.name), color = /^#[0-9a-f]{6}$/i.test(x.color || '') ? x.color : '#0f766e';
+        const icon = escH(String(x.icon || x.name.charAt(0)).slice(0, 2));
+        if (x.type === 'crypto') {
+          cryptoWallets.push({ name, symbol, icon, color, addr: x.addr, qrImage: /^https:\/\//.test(x.qr || '') ? x.qr : null });
+        } else {
+          cryptoWallets.push({ name, symbol, icon, color, bank: true, addr: x.addr, lines: [
+            '<div style="font-size:17px;font-weight:800;color:#0f2d1a;text-align:center;word-break:break-word;white-space:pre-line;margin-bottom:14px;">' + escH(x.addr) + '</div>',
+            '<div style="text-align:center;"><button id="bank-copy-btn" onclick="copyBankValue()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Copiar</button></div>'
+          ] });
+        }
+      });
     } catch (e) { /* si falla, quedan los valores por defecto */ }
   })();
 
