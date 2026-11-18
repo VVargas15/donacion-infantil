@@ -232,8 +232,8 @@ function vDel() {
 }
 
 // ---------- Configuración ----------
-const DEF = { maxDonors: 100000, accent: '#2d7a4a', heroImage: '', heroX: 50, heroY: 50, heroZoom: 100, extraMethods: [], amounts: '5,10,15,20', minAmount: 5, formTitle: 'Hacer una *donación*', amountLabel: '¿Cuánto querés donar?', customLink: 'Ingresar otro monto', btnText: '💚 Continuar al pago →', trustText: '🔒 Pago seguro · 100% va a los niños', contactEmail: 'donaciones@ong.org', transferBtn: 'Ya transferí →', pageTitle: 'Cambia la vida de los niños', heroTitle: 'Cada *donación* cambia una vida.', heroSub: 'Tu aporte llega directo a niños en comunidades vulnerables de América Latina.', campBeneficiary: '', campTitle: '', campWho: '', campUse: '', formSub: '', emailSubject: '', emailBody: '' };
-const TABS = [['apariencia', 'Apariencia'], ['textos', 'Textos de la página'], ['formulario', 'Formulario y montos'], ['cupo', 'Cupo de donantes'], ['metodos', 'Métodos de pago'], ['correo', 'Correo de confirmación'], ['clave', 'Cambiar clave de acceso']];
+const DEF = { maxDonors: 100000, accent: '#2d7a4a', heroImage: '', heroX: 50, heroY: 50, heroZoom: 100, adminEmails: '', notifyAdmin: true, extraMethods: [], amounts: '5,10,15,20', minAmount: 5, formTitle: 'Hacer una *donación*', amountLabel: '¿Cuánto querés donar?', customLink: 'Ingresar otro monto', btnText: '💚 Continuar al pago →', trustText: '🔒 Pago seguro · 100% va a los niños', contactEmail: 'donaciones@ong.org', transferBtn: 'Ya transferí →', pageTitle: 'Cambia la vida de los niños', heroTitle: 'Cada *donación* cambia una vida.', heroSub: 'Tu aporte llega directo a niños en comunidades vulnerables de América Latina.', campBeneficiary: '', campTitle: '', campWho: '', campUse: '', formSub: '', emailSubject: '', emailBody: '' };
+const TABS = [['apariencia', 'Apariencia'], ['textos', 'Textos de la página'], ['formulario', 'Formulario y montos'], ['cupo', 'Cupo de donantes'], ['metodos', 'Métodos de pago'], ['correo', 'Correo de confirmación'], ['avisos', 'Avisos al administrador'], ['clave', 'Cambiar clave de acceso']];
 const SW = ['#2d7a4a', '#1d6fb8', '#7c3aed', '#be185d', '#c2410c', '#0f766e'];
 let draft = null, ctab = 'apariencia';
 const hv = (v, d) => isNaN(parseFloat(v)) ? d : parseFloat(v);
@@ -286,6 +286,10 @@ function vCfg() {
     formulario: `<div class="sec"><h3>Montos</h3>${fld('amounts', 'Montos sugeridos (separados por coma)', '5,10,15,20', 0, 'Entre 1 y 8 montos. Ejemplo: 5,10,15,20. El primero queda seleccionado al entrar.')}${fld('minAmount', 'Monto mínimo si escriben otro monto', '5', 0, 'Solo números. No se acepta una donación menor a este monto.')}</div>
       <div class="sec"><h3>Textos del formulario</h3>${fld('formTitle', 'Título del formulario', 'Hacer una *donación*', 0, 'La palabra resaltada va entre asteriscos: *donación*')}${fld('amountLabel', 'Pregunta de los montos', '¿Cuánto querés donar?')}${fld('customLink', 'Texto del enlace "otro monto"', 'Ingresar otro monto')}${fld('btnText', 'Texto del botón principal', '💚 Continuar al pago →')}${fld('trustText', 'Línea de confianza (debajo del botón)', '🔒 Pago seguro · 100% va a los niños')}</div>
       <div class="sec"><h3>Pago y contacto</h3>${fld('contactEmail', 'Correo al que envían el comprobante', 'donaciones@ong.org')}${fld('transferBtn', 'Texto del botón "Ya transferí"', 'Ya transferí →')}${fld('pageTitle', 'Título de la pestaña del navegador', 'Cambia la vida de los niños')}</div>`,
+    avisos: `<div class="sec"><h3>Avisos al administrador</h3>
+      <div class="mcard ${draft.notifyAdmin === false ? 'off' : ''}"><div class="mhead"><div><span class="mname">Avisarme cuando alguien done</span></div><label class="tgl" aria-label="Activar avisos"><input type="checkbox" role="switch" data-k="notifyAdmin" ${draft.notifyAdmin === false ? '' : 'checked'}><span></span></label></div>
+      ${fld('adminEmails', 'Correos del administrador', 'tucorreo@gmail.com, otro@gmail.com', 0, 'Podés poner varios, separados por coma. Cada uno recibe un correo con nombre, monto, método y comprobante de cada donación nueva. Si lo dejás vacío, el aviso va al correo de la cuenta de Google dueña del script.')}
+      <div class="tools"><button class="btn ghost" data-a="testmail" type="button">Enviar correo de prueba</button></div></div></div>`,
     cupo: `<div class="sec"><h3>Cupo de donantes</h3><div class="f"><label for="d-maxDonors">Máximo de donaciones</label><input id="d-maxDonors" data-k="maxDonors" type="number" min="1" value="${esc(draft.maxDonors)}"><small>Al llegar a este número, el formulario se reemplaza por el mensaje de cierre. Escribilo sin puntos: 100000.</small></div></div>`,
     metodos: `<div class="sec"><h3>Métodos de pago</h3><p style="margin:0 0 14px;color:var(--mute);font-size:13px">Activá con el interruptor los métodos que querés que vean los donantes.</p>${METHODS.map(x => { const c = draft.methods[x.name] || {}, on = c.on !== false; return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${x.name}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-m="${esc(x.name)}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div><div class="f" style="margin-bottom:6px"><label>${esc(x.label)}</label><input class="val" data-m="${esc(x.name)}" data-f="addr" placeholder="${esc(x.label)}" value="${esc(c.addr || x.addr)}"></div>${qrBox(x, c)}</div>`; }).join('')}${extraHtml()}<small style="color:var(--mute)">Si cambiás la dirección y no subís un QR nuevo, la página genera el QR sola con la dirección nueva.</small></div>${addPicker()}`,
     correo: `<div class="sec"><h3>Correo de confirmación</h3>${fld('emailSubject', 'Asunto', '')}${fld('emailBody', 'Mensaje', '', 170, 'Usá {nombre} y {monto} para insertar los datos del donante. Se envía al verificar una donación.')}</div>`,
@@ -300,6 +304,8 @@ async function saveCfg() {
   if (!maxDonors || maxDonors < 1) return toast('El cupo debe ser un número mayor a 0');
   if (!/^#[0-9a-f]{6}$/i.test(draft.accent)) return toast('Elegí un color válido');
   for (const x of draft.extraMethods || []) if (x.on !== false && (!String(x.name || '').trim() || !String(x.addr || '').trim())) return toast('Completá los datos del método "' + (x.name || 'sin nombre') + '" o quitalo');
+  const bad = String(draft.adminEmails || '').split(/[,;\s]+/).filter(Boolean).find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+  if (bad) return toast('El correo "' + bad + '" no es válido');
   const minAmount = parseInt(draft.minAmount, 10);
   if (!minAmount || minAmount < 1) return toast('El monto mínimo debe ser un número mayor a 0');
   const am = String(draft.amounts || '').split(',').map(x => parseInt(x.trim(), 10));
@@ -325,7 +331,7 @@ $('main').addEventListener('click', e => {
 });
 $('main').addEventListener('input', e => {
   const t = e.target; if (!draft) return;
-  if (t.dataset.k) { draft[t.dataset.k] = t.value; if (t.dataset.k === 'accent' && $('prev')) $('prev').style.background = t.value; 
+  if (t.dataset.k) { draft[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value; if (t.dataset.k === 'accent' && $('prev')) $('prev').style.background = t.value; 
     if (['heroX', 'heroY', 'heroZoom'].includes(t.dataset.k)) hpos(); }
   else if (t.dataset.x !== undefined) {
     const m = draft.extraMethods[+t.dataset.x]; if (!m) return;
@@ -367,6 +373,7 @@ $('main').addEventListener('click', async e => {
   if (a === 'tab') { ctab = id; return vCfg(); }
   if (a === 'sw') { draft.accent = id; return vCfg(); }
   if (a === 'nophoto') { draft.heroImage = ''; return vCfg(); }
+  if (a === 'testmail') { if (!String(draft.adminEmails || '').trim()) return toast('Escribí primero tu correo'); toast('Enviando prueba...', 30000); post({ action: 'testAdminEmail', to: draft.adminEmails }).then(() => toast('Correo de prueba enviado. Revisá tu bandeja (y spam).', 6000)).catch(er => toast('No se pudo enviar: ' + er.message, 8000)); return; }
   if (a === 'addm') { const c = CATALOG[+$('addm').value]; draft.extraMethods.push({ ...c, addr: '', qr: '', on: true }); return vCfg(); }
   if (a === 'delm') { draft.extraMethods.splice(+id, 1); return vCfg(); }
   if (a === 'noqrx') { if (draft.extraMethods[+id]) draft.extraMethods[+id].qr = ''; return vCfg(); }
