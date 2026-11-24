@@ -135,7 +135,7 @@ async function load() {
     fetch(API + '?action=config&key=' + encodeURIComponent(key)).then(r => r.json()),
   ]);
   if (!a.success) throw new Error(a.error || 'No autorizado');
-  recs = a.records || []; cfg = c.config || {}; draft = null;
+  recs = (a.records || []).map(r => ({ ...r, id: String(r.id == null ? '' : r.id).trim(), name: String(r.name == null ? '' : r.name), email: String(r.email == null ? '' : r.email), method: String(r.method == null ? '' : r.method), receipt: String(r.receipt == null ? '' : r.receipt), status: String(r.status || 'Pendiente') })); cfg = c.config || {}; draft = null;
 }
 
 async function login() {
