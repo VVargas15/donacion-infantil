@@ -247,6 +247,7 @@
           <button id="copy-btn" onclick="copySelected()" style="flex-shrink:0;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copiar</button>
         </div>
         <div id="coin-bank-row" style="display:none;text-align:left;background:#fff;border-radius:10px;padding:6px 14px;"></div>
+        <div id="coin-extra" style="display:none;margin-top:12px;text-align:left;"></div>
       </div>
 
       <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:14px 16px;margin-top:1.2rem;font-size:12px;color:#166534;line-height:1.6;">
@@ -294,6 +295,7 @@
 
 
 <script>
+  const escHtml = t => String(t).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
   let FIRST_AMT = 5, MIN_AMT = 5;
   let selAmt = 5;
   let receiptDataUrl = null;
@@ -427,6 +429,16 @@
       bankRow.innerHTML = w.lines.map(l =>
         `<div style="font-size:13px;color:#374151;padding:4px 0;">${l}</div>`
       ).join('');
+      // Si el dato es un enlace (ej: https://paypal.me/usuario) se muestra azul y con botón para abrirlo
+      const raw = String(w.addr || '').trim();
+      const payLink = /^https?:\/\/\S+$/i.test(raw) ? raw : (/^(www\.)?paypal\.(me|com)\/\S+$/i.test(raw) ? 'https://' + raw : '');
+      if (payLink) {
+        const href = payLink.replace(/"/g, '%22').replace(/</g, '%3C');
+        const isPP = /paypal\./i.test(payLink);
+        const addrBox = bankRow.firstElementChild && bankRow.firstElementChild.firstElementChild;
+        if (addrBox) addrBox.innerHTML = '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#0070ba;text-decoration:underline;">' + addrBox.innerHTML + '</a>';
+        bankRow.insertAdjacentHTML('beforeend', '<div style="padding:4px 0 10px;"><a href="' + href + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;background:#0070ba;color:#fff;text-decoration:none;font-weight:700;font-size:15px;border-radius:10px;padding:13px 16px;">' + (isPP ? 'Pagar con PayPal →' : 'Abrir enlace de pago →') + '</a></div>');
+      }
     } else {
       netRow.style.display = 'none';
       bankRow.style.display = 'none';
@@ -439,6 +451,11 @@
       document.getElementById('copy-btn').textContent = 'Copiar';
       document.getElementById('copy-btn').style.background = 'var(--accent)';
     }
+    // Foto de QR (métodos de texto) y "datos para pagar"
+    const ex = document.getElementById('coin-extra'); let xh = '';
+    if (w.bank && /^https:\/\//.test(w.qrImage || '')) xh += '<img src="' + escHtml(w.qrImage) + '" alt="QR" style="display:block;width:180px;max-width:100%;margin:0 auto 12px;border-radius:12px;background:#fff;padding:6px;border:1px solid #e5e7eb;">';
+    if (w.info) xh += '<div style="font-size:13px;color:#374151;line-height:1.55;white-space:pre-line;background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #e5e7eb;">' + escHtml(w.info) + '</div>';
+    ex.innerHTML = xh; ex.style.display = xh ? 'block' : 'none';
   }
 
   function selectNetwork(k) {
@@ -590,6 +607,8 @@
         const w = cryptoWallets[i], c = m[w.name];
         if (!c) continue;
         if (c.on === false) { cryptoWallets.splice(i, 1); continue; }
+        if (c.info) w.info = String(c.info);
+        if (c.title && c.title !== w.name) { w.name = escHtml(c.title); w.symbol = escHtml(c.title); }
         if (c.addr) {
           if (c.addr !== w.addr) w.qrImage = null; // dirección nueva: no mostrar el QR viejo
           w.addr = c.addr;
@@ -607,9 +626,9 @@
         const name = escH(x.name), symbol = escH(x.symbol || x.name), color = /^#[0-9a-f]{6}$/i.test(x.color || '') ? x.color : '#0f766e';
         const icon = escH(String(x.icon || x.name.charAt(0)).slice(0, 2));
         if (x.type === 'crypto') {
-          cryptoWallets.push({ name, symbol, icon, color, addr: x.addr, qrImage: /^https:\/\//.test(x.qr || '') ? x.qr : null });
+          cryptoWallets.push({ name, symbol, icon, color, info: x.info || '', addr: x.addr, qrImage: /^https:\/\//.test(x.qr || '') ? x.qr : null });
         } else {
-          cryptoWallets.push({ name, symbol, icon, color, bank: true, addr: x.addr, lines: [
+          cryptoWallets.push({ name, symbol, icon, color, bank: true, info: x.info || '', qrImage: /^https:\/\//.test(x.qr || '') ? x.qr : null, addr: x.addr, lines: [
             '<div style="font-size:17px;font-weight:800;color:#0f2d1a;text-align:center;word-break:break-word;white-space:pre-line;margin-bottom:14px;">' + escH(x.addr) + '</div>',
             '<div style="text-align:center;"><button id="bank-copy-btn" onclick="copyBankValue()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Copiar</button></div>'
           ] });

@@ -70,6 +70,10 @@ td{padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:middle}t
 .tgl input:checked+span{background:#2d7a4a}.tgl input:checked+span::before{transform:translateX(20px)}
 .tgl input:focus-visible+span{outline:2px solid #2d7a4a;outline-offset:2px}
 .mcard .val{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.mchip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer}
+.mchip .dot{width:9px;height:9px;border-radius:50%;background:#2d7a4a}.mchip.off .dot{background:#c3c7bf}.mchip.off{color:var(--mute)}
+.mchip.sel{border-color:#2d7a4a;background:#eaf4ee;box-shadow:0 0 0 2px #2d7a4a22}
 </style>
 </head>
 <body>
@@ -121,14 +125,14 @@ function toast(t, ms) { const e = $('toast'); e.textContent = t; e.style.display
 async function post(body) {
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...body, key }) });
   const d = await r.json(); if (!d.success) throw new Error(d.error || 'Error');
-  if (['trash', 'restore', 'saveConfig', 'changeKey', 'uploadImage'].includes(body.action) && d.action !== body.action)
+  if (['trash', 'restore', 'saveConfig', 'changeKey', 'uploadImage', 'testAdminEmail'].includes(body.action) && d.action !== body.action)
     throw new Error('El Apps Script no está actualizado. Pegá el código nuevo y creá una nueva versión en Implementar → Administrar implementaciones.');
   return d;
 }
 async function load() {
   const [a, c] = await Promise.all([
     fetch(API + '?key=' + encodeURIComponent(key)).then(r => r.json()),
-    fetch(API + '?action=config').then(r => r.json()),
+    fetch(API + '?action=config&key=' + encodeURIComponent(key)).then(r => r.json()),
   ]);
   if (!a.success) throw new Error(a.error || 'No autorizado');
   recs = a.records || []; cfg = c.config || {}; draft = null;
@@ -253,22 +257,23 @@ const CATALOG = [
   { name: 'Transferencia bancaria', symbol: 'Transferencia', icon: '🏦', color: '#374151', type: 'text', label: 'Datos de la cuenta (banco, titular, número)' },
   { name: 'Otro método', symbol: 'Otro', icon: '＋', color: '#0f766e', type: 'text', label: 'Datos para pagar' }
 ];
-const extraHtml = () => (draft.extraMethods || []).map((x, i) => {
-  const on = x.on !== false, crypto = x.type === 'crypto';
+const methodEditor = () => {
+  const items = draft.items, i = draft._sel, x = items[i]; if (!x) return '';
+  const on = x.on !== false;
   return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${esc(x.name || 'Método')}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div>
-  <div style="display:flex;align-items:center;gap:12px"><button class="btn ghost" data-a="delm" data-id="${i}" style="padding:6px 12px">Quitar</button><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-x="${i}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div></div>
-  <div class="f" style="margin-bottom:8px"><label>Nombre</label><input class="val" data-x="${i}" data-f="name" value="${esc(x.name)}"></div>
-  <div class="f" style="margin-bottom:8px"><label>Texto del botón (podés poner la red, ej: USDC (ERC20))</label><input class="val" data-x="${i}" data-f="symbol" value="${esc(x.symbol)}"></div>
-  <div class="f" style="margin-bottom:6px"><label>${esc(x.label || 'Datos')}</label>${crypto ? `<input class="val" data-x="${i}" data-f="addr" value="${esc(x.addr)}" placeholder="Pegá aquí la dirección">` : `<textarea class="val" data-x="${i}" data-f="addr" style="min-height:70px" placeholder="Escribí los datos que debe ver el donante">${esc(x.addr)}</textarea>`}</div>
-  ${crypto ? `<div class="row" style="align-items:center;gap:12px;margin:4px 0 0">${x.qr ? `<img src="${esc(x.qr)}" alt="QR" style="width:72px;height:72px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff">` : '<div style="width:72px;height:72px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--mute);padding:4px">QR automático</div>'}<label class="btn ghost" style="cursor:pointer">${x.qr ? 'Cambiar QR' : 'Subir QR propio'}<input type="file" accept="image/*" hidden data-qrx="${i}"></label>${x.qr ? `<button class="btn ghost" data-a="noqrx" data-id="${i}">Usar QR automático</button>` : ''}</div>` : ''}</div>`;
-}).join('');
-const addPicker = () => `<div class="sec" style="margin-top:20px"><h3>Agregar otro método</h3><div class="row"><select id="addm" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff">${CATALOG.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select><button class="btn" data-a="addm" type="button">Agregar</button></div><small style="color:var(--mute)">Elegí uno de la lista y completá sus datos. Podés agregar los que quieras y quitarlos cuando quieras.</small></div>`;
-const qrBox = (x, c) => !x.qr ? '' : `<div class="row" style="margin:-4px 0 14px 0;align-items:center;gap:12px">
-  ${c.qr ? `<img src="${esc(c.qr)}" alt="QR de ${esc(x.name)}" style="width:72px;height:72px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff">` : '<div style="width:72px;height:72px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--mute);padding:4px">QR original</div>'}
-  <label class="btn ghost" style="cursor:pointer">${c.qr ? 'Cambiar QR' : 'Subir QR'}<input type="file" accept="image/*" hidden data-qrfile="${esc(x.name)}"></label>
-  ${c.qr ? `<button class="btn ghost" data-a="noqr" data-id="${esc(x.name)}">Usar QR original</button>` : ''}</div>`;
+  <div style="display:flex;align-items:center;gap:12px">${x.builtin ? '' : `<button class="btn ghost" data-a="delm" data-id="${i}" type="button" style="padding:6px 12px">Quitar</button>`}<label class="tgl" aria-label="Mostrar a los donantes"><input type="checkbox" role="switch" data-x="${i}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div></div>
+  <div class="f"><label>Nombre</label><input class="val" data-x="${i}" data-f="name" value="${esc(x.name)}" placeholder="Ej: PayPal, Nequi, Bitcoin"></div>
+  <div class="f"><label>Número, código o correo</label><input class="val" data-x="${i}" data-f="addr" value="${esc(x.addr)}" placeholder="${esc(x.label || 'Lo que debe copiar el donante')}"></div>
+  <div class="f"><label>Foto del QR</label><div class="row" style="align-items:center;gap:12px;margin:0">${x.qr ? `<img src="${esc(x.qr)}" alt="QR" style="width:84px;height:84px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff">` : `<div style="width:84px;height:84px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--mute);padding:4px">${x.type === 'crypto' ? 'QR automático' : 'Sin QR'}</div>`}<label class="btn ghost" style="cursor:pointer">${x.qr ? 'Cambiar foto' : 'Subir foto del QR'}<input type="file" accept="image/*" hidden data-qrx="${i}"></label>${x.qr ? `<button class="btn ghost" data-a="noqrx" data-id="${i}" type="button">Quitar foto</button>` : ''}</div></div>
+  <div class="f" style="margin-bottom:0"><label>Datos para pagar</label><textarea class="val" data-x="${i}" data-f="info" style="min-height:90px" placeholder="Ej: Enviá el monto exacto y después subí el comprobante. Titular: Nombre Apellido.">${esc(x.info)}</textarea><small>Este texto lo ve el donante junto al método. Es opcional.</small></div></div>`;
+};
 function vCfg() {
   if (!draft) draft = { ...DEF, ...cfg, methods: JSON.parse(JSON.stringify(cfg.methods || {})), extraMethods: JSON.parse(JSON.stringify(cfg.extraMethods || [])) };
+  if (!draft.items) {
+    draft.items = METHODS.map(x => { const c = draft.methods[x.name] || {}; return { builtin: true, key: x.name, name: c.title || x.name, label: x.label, addr: c.addr || x.addr, qr: c.qr || '', info: c.info || '', on: c.on !== false, type: x.qr ? 'crypto' : 'text' }; })
+      .concat(draft.extraMethods.map(x => ({ builtin: false, qr: '', info: '', ...x })));
+    draft._sel = 0;
+  }
   const P = {
     apariencia: `<div class="sec"><h3>Foto de portada</h3>${draft.heroImage ? `<img src="${esc(draft.heroImage)}" alt="Foto de portada actual" style="width:100%;max-width:340px;height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--line)">` : '<div class="empty" style="max-width:340px;border:1.5px dashed var(--line);border-radius:12px;padding:30px">Se usa la foto original de la página.</div>'}
       <div class="tools" style="margin-top:12px"><label class="btn ghost" style="cursor:pointer">Subir otra foto<input type="file" id="photo" accept="image/*" hidden></label>${draft.heroImage ? '<button class="btn ghost" data-a="nophoto">Volver a la foto original</button>' : ''}</div><small style="color:var(--mute)">Mejor una foto vertical. Se ajusta sola y tarda unos segundos en subir.</small></div>
@@ -291,7 +296,10 @@ function vCfg() {
       ${fld('adminEmails', 'Correos del administrador', 'tucorreo@gmail.com, otro@gmail.com', 0, 'Podés poner varios, separados por coma. Cada uno recibe un correo con nombre, monto, método y comprobante de cada donación nueva. Si lo dejás vacío, el aviso va al correo de la cuenta de Google dueña del script.')}
       <div class="tools"><button class="btn ghost" data-a="testmail" type="button">Enviar correo de prueba</button></div></div></div>`,
     cupo: `<div class="sec"><h3>Cupo de donantes</h3><div class="f"><label for="d-maxDonors">Máximo de donaciones</label><input id="d-maxDonors" data-k="maxDonors" type="number" min="1" value="${esc(draft.maxDonors)}"><small>Al llegar a este número, el formulario se reemplaza por el mensaje de cierre. Escribilo sin puntos: 100000.</small></div></div>`,
-    metodos: `<div class="sec"><h3>Métodos de pago</h3><p style="margin:0 0 14px;color:var(--mute);font-size:13px">Activá con el interruptor los métodos que querés que vean los donantes.</p>${METHODS.map(x => { const c = draft.methods[x.name] || {}, on = c.on !== false; return `<div class="mcard ${on ? '' : 'off'}"><div class="mhead"><div><span class="mname">${x.name}</span><span class="mstate">${on ? 'Visible' : 'Oculto'}</span></div><label class="tgl" aria-label="Mostrar ${esc(x.name)} a los donantes"><input type="checkbox" role="switch" data-m="${esc(x.name)}" data-f="on" ${on ? 'checked' : ''}><span></span></label></div><div class="f" style="margin-bottom:6px"><label>${esc(x.label)}</label><input class="val" data-m="${esc(x.name)}" data-f="addr" placeholder="${esc(x.label)}" value="${esc(c.addr || x.addr)}"></div>${qrBox(x, c)}</div>`; }).join('')}${extraHtml()}<small style="color:var(--mute)">Si cambiás la dirección y no subís un QR nuevo, la página genera el QR sola con la dirección nueva.</small></div>${addPicker()}`,
+    metodos: `<div class="sec"><h3>Métodos de pago</h3><p style="margin:0 0 12px;color:var(--mute);font-size:13px">Tocá un método para editarlo. El punto verde significa que lo ven los donantes.</p>
+      <div class="chips">${draft.items.map((x, i) => `<button type="button" class="mchip ${i === draft._sel ? 'sel' : ''} ${x.on === false ? 'off' : ''}" data-a="selm" data-id="${i}"><span class="dot"></span>${esc(x.name || 'Método')}</button>`).join('')}</div>
+      <div class="row" style="margin-bottom:16px"><select id="addm" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff">${CATALOG.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select><button class="btn" data-a="addm" type="button">+ Agregar método</button></div>
+      ${methodEditor()}</div>`,
     correo: `<div class="sec"><h3>Correo de confirmación</h3>${fld('emailSubject', 'Asunto', '')}${fld('emailBody', 'Mensaje', '', 170, 'Usá {nombre} y {monto} para insertar los datos del donante. Se envía al verificar una donación.')}</div>`,
     clave: `<div class="sec"><h3>Cambiar clave de acceso</h3><div class="f"><label for="nk">Nueva clave</label><input id="nk" type="password" autocomplete="new-password"><small>Mínimo 8 caracteres. Vas a seguir dentro del panel con la clave nueva.</small></div><button class="btn" data-a="chk">Cambiar clave</button></div>`,
   };
@@ -303,7 +311,7 @@ async function saveCfg() {
   const maxDonors = parseInt(draft.maxDonors, 10);
   if (!maxDonors || maxDonors < 1) return toast('El cupo debe ser un número mayor a 0');
   if (!/^#[0-9a-f]{6}$/i.test(draft.accent)) return toast('Elegí un color válido');
-  for (const x of draft.extraMethods || []) if (x.on !== false && (!String(x.name || '').trim() || !String(x.addr || '').trim())) return toast('Completá los datos del método "' + (x.name || 'sin nombre') + '" o quitalo');
+  for (const x of draft.items || []) if (x.on !== false && (!String(x.name || '').trim() || !String(x.addr || '').trim())) return toast('Completá los datos del método "' + (x.name || 'sin nombre') + '" o quitalo');
   const bad = String(draft.adminEmails || '').split(/[,;\s]+/).filter(Boolean).find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
   if (bad) return toast('El correo "' + bad + '" no es válido');
   const minAmount = parseInt(draft.minAmount, 10);
@@ -311,7 +319,10 @@ async function saveCfg() {
   const am = String(draft.amounts || '').split(',').map(x => parseInt(x.trim(), 10));
   if (am.length < 1 || am.length > 8 || am.some(n => !n || n < 1)) return toast('Los montos deben ser entre 1 y 8 números separados por coma, ej: 5,10,15,20');
   draft.amounts = am.join(',');
-  try { await post({ action: 'saveConfig', config: { ...draft, maxDonors, minAmount, extraMethods: draft.extraMethods } }); await refresh('Cambios guardados'); } catch (e) { toast(e.message); }
+  try { const { items, _sel, ...base } = draft;
+    const methods = {}; items.filter(x => x.builtin).forEach(x => { methods[x.key] = { on: x.on !== false, addr: x.addr, qr: x.qr || '', info: x.info || '', title: x.name && x.name !== x.key ? x.name : '' }; });
+    const extraMethods = items.filter(x => !x.builtin).map(({ builtin, key, ...rest }) => rest);
+    await post({ action: 'saveConfig', config: { ...base, maxDonors, minAmount, methods, extraMethods } }); await refresh('Cambios guardados'); } catch (e) { toast(e.message); }
 }
 async function changeKey() {
   const nk = $('nk').value; if (nk.length < 8) return toast('La clave debe tener al menos 8 caracteres');
@@ -334,23 +345,21 @@ $('main').addEventListener('input', e => {
   if (t.dataset.k) { draft[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value; if (t.dataset.k === 'accent' && $('prev')) $('prev').style.background = t.value; 
     if (['heroX', 'heroY', 'heroZoom'].includes(t.dataset.k)) hpos(); }
   else if (t.dataset.x !== undefined) {
-    const m = draft.extraMethods[+t.dataset.x]; if (!m) return;
-    if (t.dataset.f === 'on') { m.on = t.checked; const cd = t.closest('.mcard'); if (cd) { cd.classList.toggle('off', !t.checked); cd.querySelector('.mstate').textContent = t.checked ? 'Visible' : 'Oculto'; } }
-    else { m[t.dataset.f] = t.value; if (t.dataset.f === 'name') { const mn = t.closest('.mcard').querySelector('.mname'); if (mn) mn.textContent = t.value || 'Método'; } }
+    const m = draft.items[+t.dataset.x]; if (!m) return;
+    if (t.dataset.f === 'on') { m.on = t.checked; const cd = t.closest('.mcard'); if (cd) { cd.classList.toggle('off', !t.checked); cd.querySelector('.mstate').textContent = t.checked ? 'Visible' : 'Oculto'; } const ch = document.querySelector('.mchip.sel'); if (ch) ch.classList.toggle('off', !t.checked); }
+    else { m[t.dataset.f] = t.value; if (t.dataset.f === 'name') { const mn = t.closest('.mcard').querySelector('.mname'); if (mn) mn.textContent = t.value || 'Método'; const ch = document.querySelector('.mchip.sel'); if (ch) ch.lastChild.textContent = t.value || 'Método'; } }
   }
-  else if (t.dataset.m) { const m = draft.methods[t.dataset.m] = draft.methods[t.dataset.m] || {}; if (t.dataset.f === 'on') { m.on = t.checked; const cd = t.closest('.mcard'); if (cd) { cd.classList.toggle('off', !t.checked); cd.querySelector('.mstate').textContent = t.checked ? 'Visible' : 'Oculto'; } } else m.addr = t.value; }
 });
 $('main').addEventListener('change', async e => {
   const t = e.target, f = t.files && t.files[0]; if (!f || !draft) return;
-  const isQr = !!t.dataset.qrfile || t.dataset.qrx !== undefined;
+  const isQr = t.dataset.qrx !== undefined;
   if (t.id !== 'photo' && !isQr) return;
   try {
     toast('Subiendo imagen... espera unos segundos', 60000);
     const img = isQr ? await shrink(f, 800, .92) : await shrink(f);
-    const d = await post({ action: 'uploadImage', image: img, name: isQr ? 'qr-' + String(t.dataset.qrfile || 'extra' + t.dataset.qrx).replace(/\W+/g, '') : 'portada' });
+    const d = await post({ action: 'uploadImage', image: img, name: isQr ? 'qr-' + String((draft.items[+t.dataset.qrx] || {}).name || 'metodo').replace(/\W+/g, '') : 'portada' });
     if (!/^https:\/\//.test(d.url || '')) throw new Error('El servidor no devolvió el enlace de la imagen');
-    if (t.dataset.qrx !== undefined) draft.extraMethods[+t.dataset.qrx].qr = d.url;
-    else if (isQr) { const m = draft.methods[t.dataset.qrfile] = draft.methods[t.dataset.qrfile] || {}; m.qr = d.url; }
+    if (isQr) draft.items[+t.dataset.qrx].qr = d.url;
     else draft.heroImage = d.url;
     vCfg(); toast('Imagen subida. Tocá Guardar cambios para aplicarla.', 5000);
   } catch (er) { t.value = ''; toast('No se pudo subir: ' + (er instanceof TypeError ? 'sin conexión con el servidor' : er.message), 9000); }
@@ -374,10 +383,10 @@ $('main').addEventListener('click', async e => {
   if (a === 'sw') { draft.accent = id; return vCfg(); }
   if (a === 'nophoto') { draft.heroImage = ''; return vCfg(); }
   if (a === 'testmail') { if (!String(draft.adminEmails || '').trim()) return toast('Escribí primero tu correo'); toast('Enviando prueba...', 30000); post({ action: 'testAdminEmail', to: draft.adminEmails }).then(() => toast('Correo de prueba enviado. Revisá tu bandeja (y spam).', 6000)).catch(er => toast('No se pudo enviar: ' + er.message, 8000)); return; }
-  if (a === 'addm') { const c = CATALOG[+$('addm').value]; draft.extraMethods.push({ ...c, addr: '', qr: '', on: true }); return vCfg(); }
-  if (a === 'delm') { draft.extraMethods.splice(+id, 1); return vCfg(); }
-  if (a === 'noqrx') { if (draft.extraMethods[+id]) draft.extraMethods[+id].qr = ''; return vCfg(); }
-  if (a === 'noqr') { if (draft.methods[id]) delete draft.methods[id].qr; return vCfg(); }
+  if (a === 'selm') { draft._sel = +id; return vCfg(); }
+  if (a === 'addm') { const c = CATALOG[+$('addm').value]; draft.items.push({ ...c, builtin: false, addr: '', qr: '', info: '', on: true }); draft._sel = draft.items.length - 1; return vCfg(); }
+  if (a === 'delm') { if (draft.items[+id] && !draft.items[+id].builtin) draft.items.splice(+id, 1); draft._sel = 0; return vCfg(); }
+  if (a === 'noqrx') { if (draft.items[+id]) draft.items[+id].qr = ''; return vCfg(); }
   if (a === 'save') return saveCfg();
   if (a === 'chk') return changeKey();
   if (a === 'ver') return detail(r);
