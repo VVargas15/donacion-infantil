@@ -28,8 +28,8 @@
 
     /* LEFT */
     .left { background: #0f2d1a; }
-    .left-bg { opacity: 0; transition: opacity .4s ease; }
-    .left-bg.ready { opacity: 1; }
+    body { opacity: 0; transition: opacity .35s ease; }
+    body.ready { opacity: 1; }
     .left {
       width: 400px; min-width: 360px;
       position: relative; overflow: hidden;
@@ -299,7 +299,7 @@
 
 <script>
   const escHtml = t => String(t).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
-  let FIRST_AMT = 5, MIN_AMT = 5;
+  let FIRST_AMT = 5, MIN_AMT = 5, BTN_TEXT = '💚 Continuar al pago →';
   let selAmt = 5;
   let receiptDataUrl = null;
 
@@ -578,7 +578,7 @@
     // ---- Formulario y montos ----
     { const T = (sel, v) => { const el = document.querySelector(sel); if (el && v) el.textContent = v; };
       if (c.formTitle) document.querySelector('.right-title').innerHTML = esc(c.formTitle).replace(/\*(.+?)\*/g, '<span>$1</span>');
-      T('#form-wrap .section-label', c.amountLabel); T('.custom-link', c.customLink); T('#btn-text', c.btnText);
+      T('#form-wrap .section-label', c.amountLabel); T('.custom-link', c.customLink); T('#btn-text', c.btnText); if (c.btnText) BTN_TEXT = c.btnText;
       T('.trust-bar', c.trustText); T('#contact-email', c.contactEmail); T('#transfer-btn', c.transferBtn);
       if (c.pageTitle) document.title = c.pageTitle;
       const mn = parseInt(c.minAmount, 10);
@@ -602,11 +602,10 @@
   }
 
   // Aplica la configuración del panel admin (métodos activos y datos de pago)
-  (async function applyConfig() {
-    try {
-      const res = await fetch(SHEET_API_URL + '?action=config');
-      const cf = (await res.json()).config || {};
-      applyLook(cf);
+  const BASE_WALLETS = JSON.parse(JSON.stringify(cryptoWallets));
+  function applyWallets(cf) {
+    cryptoWallets.length = 0;
+    BASE_WALLETS.forEach(w => cryptoWallets.push(JSON.parse(JSON.stringify(w))));
       const m = cf.methods || {};
       for (let i = cryptoWallets.length - 1; i >= 0; i--) {
         const w = cryptoWallets[i], c = m[w.name];
@@ -639,10 +638,24 @@
           ] });
         }
       });
+  }
+
+  // La configuración se guarda en el navegador: las visitas siguientes ven tu diseño al instante
+  (async function applyConfig() {
+    const KEY = 'cfg_cache_v1', reveal = () => document.body.classList.add('ready');
+    let cached = null; try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (cached) { try { applyLook(cached); applyWallets(cached); } catch (e) {} reveal(); }
+    try {
+      const res = await fetch(SHEET_API_URL + '?action=config');
+      const cf = (await res.json()).config || {}, str = JSON.stringify(cf);
+      if (!cached || JSON.stringify(cached) !== str) {
+        applyLook(cf); applyWallets(cf);
+        try { localStorage.setItem(KEY, str); } catch (e) {}
+      }
     } catch (e) { /* si falla, quedan los valores por defecto */ }
-    finally { const lb0 = document.querySelector('.left-bg'); if (lb0) lb0.classList.add('ready'); }
+    finally { reveal(); }
   })();
-  setTimeout(() => { const lb1 = document.querySelector('.left-bg'); if (lb1) lb1.classList.add('ready'); }, 3000);
+  setTimeout(() => document.body.classList.add('ready'), 4000);
 
   function confirmCryptoDonation() {
     if (!receiptDataUrl) {
@@ -724,7 +737,7 @@
     btn.style.opacity = '';
     btn.style.cursor = '';
     document.getElementById('spinner').style.display = 'none';
-    document.getElementById('btn-text').textContent = '💚 Continuar al pago →';
+    document.getElementById('btn-text').textContent = BTN_TEXT;
     // Reset receipt submit button
     const submitBtn = document.getElementById('receipt-submit-btn');
     submitBtn.disabled = false;
