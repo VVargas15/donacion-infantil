@@ -436,6 +436,8 @@
         const href = payLink.replace(/"/g, '%22').replace(/</g, '%3C');
         const isPP = /paypal\./i.test(payLink);
         const addrBox = bankRow.firstElementChild && bankRow.firstElementChild.firstElementChild;
+        const cpBtn = document.getElementById('bank-copy-btn');   // con enlace no hace falta "Copiar"
+        if (cpBtn && cpBtn.parentElement && cpBtn.parentElement.parentElement) cpBtn.parentElement.parentElement.remove();
         if (addrBox) addrBox.innerHTML = '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#0070ba;text-decoration:underline;">' + addrBox.innerHTML + '</a>';
         bankRow.insertAdjacentHTML('beforeend', '<div style="padding:4px 0 10px;"><a href="' + href + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;background:#0070ba;color:#fff;text-decoration:none;font-weight:700;font-size:15px;border-radius:10px;padding:13px 16px;">' + (isPP ? 'Pagar con PayPal →' : 'Abrir enlace de pago →') + '</a></div>');
       }
